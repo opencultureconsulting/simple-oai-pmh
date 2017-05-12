@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+Simple OAI-PMH 2.0 Data Provider
+Copyright (C) 2011 Jianfeng Li
+Copyright (C) 2013 Daniel Neis Araujo <danielneis@gmail.com>
+Copyright (C) 2017 Sebastian Meyer <sebastian.meyer@opencultureconsulting.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
 <head>
     <meta charset="UTF-8">
-    <title>OAI-PMH 2.0 Data Provider (written in PHP)</title>
+    <title>Simple OAI-PMH 2.0 Data Provider</title>
 </head>
 <body>
+  <h1>Simple OAI-PMH 2.0 Data Provider</h1>
 
-    <h1>OAI-PMH 2.0 Data Provider (written in PHP)</h1>
+  <p>This is a simple implementation of an <a href="http://www.openarchives.org/OAI/openarchivesprotocol.html" title="OpenArchives.org">OAI-PMH 2.0 Data Provider</a> written in <a href="http://www.php.net" title="PHP.net">PHP</a>.</p>
 
-    <p>This is an implementation of an <a href="http://www.openarchives.org/OAI/openarchivesprotocol.html" target="_blank">OAI-PMH 2.0 Data Provider</a>, written in <a href="http://www.php.net" title="PHP's website" target="_blank">PHP</a>
-
-    <p>For more information, take a look at <a href="README.txt">README.txt</a> file</p>
-
-    <h2>Simple interface to sample server</h2>
-
-    <ul>
-    <li><a href="oai2.php?verb=Identify">Identify</a></li>
-    <li><a href="oai2.php?verb=ListMetadataFormats">ListMetadataFormats</a></li>
-    <li><a href="oai2.php?verb=ListSets">ListSets</a></li>
-    <li><a href="oai2.php?verb=ListIdentifiers&amp;metadataPrefix=oai_dc">ListIdentifiers(metadataPrefix=oai_dc)</a></li>
-    <li><a href="oai2.php?verb=ListRecords&amp;metadataPrefix=oai_dc">ListRecords(metadataPrefix=oai_dc)</a></li>
-    <li><a href="oai2.php?verb=GetRecord&amp;metadataPrefix=oai_dc&amp;identifier=a.b.c">GetRecord(metadataPrefix=oai_dc, identifier=a.b.c)</a></li>
-    </ul>
+  <p>For more information take a look at the source code repository on <a href="https://github.com/opencultureconsulting/oai_pmh" title="GitHub.com">GitHub</a>.</p>
 </body>
 </html>
