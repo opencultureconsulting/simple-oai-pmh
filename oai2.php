@@ -1,128 +1,116 @@
 <?php
+/**
+ * Simple OAI-PMH 2.0 Data Provider
+ * Copyright (C) 2011 Jianfeng Li
+ * Copyright (C) 2013 Daniel Neis Araujo <danielneis@gmail.com>
+ * Copyright (C) 2017 Sebastian Meyer <sebastian.meyer@opencultureconsulting.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+require_once('oai2config.php');
 require_once('oai2server.php');
 
-/**
- * Identifier settings. It needs to have proper values to reflect the settings of the data provider.
- * Is MUST be declared in this order
- *
- * - $identifyResponse['repositoryName'] : compulsory. A human readable name for the repository;
- * - $identifyResponse['baseURL'] : compulsory. The base URL of the repository;
- * - $identifyResponse['protocolVersion'] : compulsory. The version of the OAI-PMH supported by the repository;
- * - $identifyResponse['earliestDatestamp'] : compulsory. A UTCdatetime that is the guaranteed lower limit of all datestamps recording changes, modifications, or deletions in the repository. A repository must not use datestamps lower than the one specified by the content of the earliestDatestamp element. earliestDatestamp must be expressed at the finest granularity supported by the repository.
- * - $identifyResponse['deletedRecord'] : the manner in which the repository supports the notion of deleted records. Legitimate values are no ; transient ; persistent with meanings defined in the section on deletion.
- * - $identifyResponse['granularity'] : the finest harvesting granularity supported by the repository. The legitimate values are YYYY-MM-DD and YYYY-MM-DDThh:mm:ssZ with meanings as defined in ISO8601.
- *
- */
-$identifyResponse = array();
-$identifyResponse["repositoryName"] = 'OAI2 PMH Test';
-$identifyResponse["baseURL"] = 'http://198.199.108.242/~neis/oai_pmh/oai2.php';
-$identifyResponse["protocolVersion"] = '2.0';
-$identifyResponse['adminEmail'] = 'danielneis@gmail.com';
-$identifyResponse["earliestDatestamp"] = '2013-01-01T12:00:00Z';
-$identifyResponse["deletedRecord"] = 'no'; // How your repository handles deletions
-                                           // no:             The repository does not maintain status about deletions.
-                                           //                It MUST NOT reveal a deleted status.
-                                           // persistent:    The repository persistently keeps track about deletions
-                                           //                with no time limit. It MUST consistently reveal the status
-                                           //                of a deleted record over time.
-                                           // transient:   The repository does not guarantee that a list of deletions is
-                                           //                maintained. It MAY reveal a deleted status for records.
-$identifyResponse["granularity"] = 'YYYY-MM-DDThh:mm:ssZ';
+// Get all available records and their respective timestamps
+$records = array();
+$timestamps = array();
 
-$example_record = array('identifier' => 'a.b.c',
-                        'datestamp' => date('Y-m-d-H:s'),
-                        'set' => 'class:activity',
-                        'metadata' => array(
-                            'container_name' => 'oai_dc:dc',
-                            'container_attributes' => array(
-                                'xmlns:oai_dc' => "http://www.openarchives.org/OAI/2.0/oai_dc/",
-                                'xmlns:dc' => "http://purl.org/dc/elements/1.1/",
-                                'xmlns:xsi' => "http://www.w3.org/2001/XMLSchema-instance",
-                                'xsi:schemaLocation' =>
-                                'http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd'
-                            ),
-                            'fields' => array(
-                                'dc:title' => 'Testing records',
-                                'dc:author' => 'Neis'
-                            )
-                       ));
+$files = glob('data/*.xml');
+foreach($files as $file) {
+  $records[pathinfo($file, PATHINFO_FILENAME)] = $file;
+  $timestamps[filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
+};
 
-/* unit tests ;) */
-if (!isset($args)) {
-    $args = $_GET;
-}
-if (!isset($uri)) {
-    $uri = 'test.oai_pmh';
-}
-$oai2 = new OAI2Server($uri, $args, $identifyResponse,
-    array(
-        'ListMetadataFormats' =>
-        function($identifier = '') {
-            if (!empty($identifier) && $identifier != 'a.b.c') {
-                throw new OAI2Exception('idDoesNotExist');
-            }
-            return
-                array('rif' => array('metadataPrefix'=>'rif',
-                                     'schema'=>'http://services.ands.org.au/sandbox/orca/schemata/registryObjects.xsd',
-                                     'metadataNamespace'=>'http://ands.org.au/standards/rif-cs/registryObjects/',
-                               ),
-                      'oai_dc' => array('metadataPrefix'=>'oai_dc',
-                                        'schema'=>'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
-                                        'metadataNamespace'=>'http://www.openarchives.org/OAI/2.0/oai_dc/',
-                                        'record_prefix'=>'dc',
-                                        'record_namespace' => 'http://purl.org/dc/elements/1.1/'));
-        },
+ksort($records);
+reset($records);
 
-        'ListSets' =>
-        function($resumptionToken = '') {
-            return
-                array (
-                    array('setSpec'=>'class:collection', 'setName'=>'Collections'),
-                    array('setSpec'=>'math', 'setName'=>'Mathematics') ,
-                    array('setSpec'=>'phys', 'setName'=>'Physics'),
-                    array('setSpec'=>'phdthesis', 'setName'=>'PHD Thesis',
-                          'setDescription'=>
-                              '<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" '.
-                              ' xmlns:dc="http://purl.org/dc/elements/1.1/" '.
-                              ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '.
-                              ' xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ '.
-                              ' http://www.openarchives.org/OAI/2.0/oai_dc.xsd"> '.
-                              ' <dc:description>This set contains metadata describing '.
-                              ' electronic music recordings made during the 1950ies</dc:description> '.
-                              ' </oai_dc:dc>'));
-        },
+ksort($timestamps);
+reset($timestamps);
 
-        'ListRecords' =>
-        function($metadataPrefix, $from = '', $until = '', $set = '', $count = false, $deliveredRecords = 0, $maxItems = 0) use ($example_record) {
-            if ($count) {
-                return 1;
-            }
-            if ($set != '') {
-                throw new OAI2Exception('noSetHierarchy');
-            }
-            if ($metadataPrefix != 'oai_dc') {
-                throw new OAI2Exception('noRecordsMatch');
-            }
-            return array($example_record);
-        },
+// Build the Identify response
+$identifyResponse = array(
+  'repositoryName' => $config['repositoryName'],
+  'baseURL' => $config['baseURL'],
+  'protocolVersion' => '2.0',
+  'adminEmail' => $config['adminEmail'],
+  'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', key($timestamps)),
+  'deletedRecord' => 'no',
+  'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
+);
 
-        'GetRecord' =>
-        function($identifier, $metadataPrefix) use ($example_record) {
-            if ($identifier != 'a.b.c') {
-                throw new OAI2Exception('idDoesNotExist');
-            }
-            return $example_record;
-        },
-    )
+$oai2 = new OAI2Server(
+  'http://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH),
+  $_GET,
+  $identifyResponse,
+  array(
+    'GetRecord' =>
+    function($identifier, $metadataPrefix) {
+      if (empty($records[$identifier])) {
+        return array();
+      } else {
+        return array(
+          'identifier' => $identifier,
+          'timestamp' => filemtime($records[$identifier]),
+          'metadata' => $records[$identifier]
+        );
+      }
+    },
+    'ListRecords' =>
+    function($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
+      $resultSet = array();
+      foreach($timestamps as $timestamp => $identifiers) {
+        if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
+          foreach($identifiers as $identifier) {
+            $resultSet[] = array(
+              'identifier' => $identifier,
+              'timestamp' => filemtime($records[$identifier]),
+              'metadata' => $records[$identifier]
+            );
+          }
+        }
+      }
+      if ($count) {
+        return count($resultSet);
+      } else {
+        return array_slice($resultSet, $deliveredRecords, $maxItems);
+      }
+    },
+    'ListMetadataFormats' =>
+    function($identifier = '') {
+      if (!empty($identifier) && empty($records[$identifier]) {
+        throw new OAI2Exception('idDoesNotExist');
+      } else {
+        return array(
+          $config['metadataFormat'] => array (
+            'metadataPrefix' => $config['metadataFormat'],
+            'schema'=> $config['metadataSchema'],
+            'metadataNamespace' => $config['metadataNamespace']
+          )
+        );
+      }
+    }
+  ),
+  $config
 );
 
 $response = $oai2->response();
+
 if (isset($return)) {
-    return $response;
+  return $response;
 } else {
-    $response->formatOutput = true;
-    $response->preserveWhiteSpace = false;
-    header('Content-Type: text/xml');
-    echo $response->saveXML();
+  $response->formatOutput = true;
+  $response->preserveWhiteSpace = false;
+  header('Content-Type: text/xml');
+  echo $response->saveXML();
 }

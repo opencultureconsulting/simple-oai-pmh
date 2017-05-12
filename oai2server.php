@@ -1,4 +1,24 @@
 <?php
+/**
+ * Simple OAI-PMH 2.0 Data Provider
+ * Copyright (C) 2011 Jianfeng Li
+ * Copyright (C) 2013 Daniel Neis Araujo <danielneis@gmail.com>
+ * Copyright (C) 2017 Sebastian Meyer <sebastian.meyer@opencultureconsulting.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 require_once('oai2exception.php');
 require_once('oai2xml.php');
 
@@ -11,41 +31,33 @@ class OAI2Server {
     public $errors = array();
     private $args = array();
     private $verb = '';
-    private $token_prefix = '/tmp/oai_pmh-';
+    private $token_prefix = '/tmp/oai2-';
     private $token_valid = 86400;
+    private $max_records = 100;
 
-    function __construct($uri, $args, $identifyResponse, $callbacks) {
-
+    public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
         $this->uri = $uri;
-
         if (!isset($args['verb']) || empty($args['verb'])) {
             $this->errors[] = new OAI2Exception('badVerb');
         } else {
             $verbs = array('Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord');
             if (in_array($args['verb'], $verbs)) {
-
                 $this->verb = $args['verb'];
-
                 unset($args['verb']);
-
                 $this->args = $args;
-
                 $this->identifyResponse = $identifyResponse;
-
                 $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
-                $this->listSetsCallback = $callbacks['ListSets'];
                 $this->listRecordsCallback = $callbacks['ListRecords'];
                 $this->getRecordCallback = $callbacks['GetRecord'];
-
+                $this->token_prefix = $config['tokenPrefix'];
+                $this->token_valid = $config['tokenValid'];
+                $this->max_records = $config['maxRecords'];
                 $this->response = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
-
                 call_user_func(array($this, $this->verb));
-
             } else {
                 $this->errors[] = new OAI2Exception('badVerb');
             }
         }
-
     }
 
     public function response() {
@@ -63,7 +75,6 @@ class OAI2Server {
     }
 
     public function Identify() {
-
         if (count($this->args) > 0) {
             foreach($this->args as $key => $val) {
                 $this->errors[] = new OAI2Exception('badArgument');
@@ -76,7 +87,6 @@ class OAI2Server {
     }
 
     public function ListMetadataFormats() {
-
         foreach ($this->args as $argument => $value) {
             if ($argument != 'identifier') {
                 $this->errors[] = new OAI2Exception('badArgument');
@@ -91,10 +101,10 @@ class OAI2Server {
             try {
                 if ($formats = call_user_func($this->listMetadataFormatsCallback, $identifier)) {
                     foreach($formats as $key => $val) {
-                        $cmf = $this->response->addToVerbNode("metadataFormat");
-                        $this->response->addChild($cmf,'metadataPrefix',$key);
-                        $this->response->addChild($cmf,'schema',$val['schema']);
-                        $this->response->addChild($cmf,'metadataNamespace',$val['metadataNamespace']);
+                        $cmf = $this->response->addToVerbNode('metadataFormat');
+                        $this->response->addChild($cmf, 'metadataPrefix', $key);
+                        $this->response->addChild($cmf, 'schema', $val['schema']);
+                        $this->response->addChild($cmf, 'metadataNamespace', $val['metadataNamespace']);
                     }
                 } else {
                     $this->errors[] = new OAI2Exception('noMetadataFormats');
@@ -106,45 +116,18 @@ class OAI2Server {
     }
 
     public function ListSets() {
-
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
                 $this->errors[] = new OAI2Exception('badArgument');
             } else {
-                if ((int)$val+$this->token_valid < time()) {
-                    $this->errors[] = new OAI2Exception('badResumptionToken');
-                }
+                $this->errors[] = new OAI2Exception('badResumptionToken');
             }
-            $resumptionToken = $this->args['resumptionToken'];
         } else {
-            $resumptionToken = null;
-        }
-        if (empty($this->errors)) {
-            if ($sets = call_user_func($this->listSetsCallback, $resumptionToken)) {
-
-                foreach($sets as $set) {
-
-                    $setNode = $this->response->addToVerbNode("set");
-
-                    foreach($set as $key => $val) {
-                        if($key=='setDescription') {
-                            $desNode = $this->response->addChild($setNode,$key);
-                            $des = $this->response->doc->createDocumentFragment();
-                            $des->appendXML($val);
-                            $desNode->appendChild($des);
-                        } else {
-                            $this->response->addChild($setNode,$key,$val);
-                        }
-                    }
-                }
-            } else {
-                $this->errors[] = new OAI2Exception('noSetHierarchy');
-            }
+            $this->errors[] = new OAI2Exception('noSetHierarchy');
         }
     }
 
     public function GetRecord() {
-
         if (!isset($this->args['metadataPrefix'])) {
             $this->errors[] = new OAI2Exception('badArgument');
         } else {
@@ -156,28 +139,12 @@ class OAI2Server {
         if (!isset($this->args['identifier'])) {
             $this->errors[] = new OAI2Exception('badArgument');
         }
-
         if (empty($this->errors)) {
             try {
                 if ($record = call_user_func($this->getRecordCallback, $this->args['identifier'], $this->args['metadataPrefix'])) {
-
-                    $identifier = $record['identifier'];
-
-                    $datestamp = $this->formatDatestamp($record['datestamp']);
-
-                    $set = $record['set'];
-
-                    $status_deleted = (isset($record['deleted']) && ($record['deleted'] == 'true') &&
-                                       (($this->identifyResponse['deletedRecord'] == 'transient') ||
-                                        ($this->identifyResponse['deletedRecord'] == 'persistent')));
-
                     $cur_record = $this->response->addToVerbNode('record');
-                    $cur_header = $this->response->createHeader($identifier, $datestamp, $set, $cur_record);
-                    if ($status_deleted) {
-                        $cur_header->setAttribute("status","deleted");
-                    } else {
-                        $this->add_metadata($cur_record, $record);
-                    }
+                    $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $cur_record);
+                    $this->add_metadata($cur_record, $record['metadata']);
                 } else {
                     $this->errors[] = new OAI2Exception('idDoesNotExist');
                 }
@@ -192,14 +159,11 @@ class OAI2Server {
     }
 
     public function ListRecords() {
-
-        $maxItems = 1000;
+        $maxItems = $this->max_records;
         $deliveredRecords = 0;
         $metadataPrefix = $this->args['metadataPrefix'];
         $from = isset($this->args['from']) ? $this->args['from'] : '';
         $until = isset($this->args['until']) ? $this->args['until'] : '';
-        $set = isset($this->args['set']) ? $this->args['set'] : '';
-
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
                 $this->errors[] = new OAI2Exception('badArgument');
@@ -211,7 +175,7 @@ class OAI2Server {
                         $this->errors[] = new OAI2Exception('badResumptionToken');
                     } else {
                         if ($readings = $this->readResumptionToken($this->token_prefix.$this->args['resumptionToken'])) {
-                            list($deliveredRecords, $metadataPrefix, $from, $until, $set) = $readings;
+                            list($deliveredRecords, $metadataPrefix, $from, $until) = $readings;
                         } else {
                             $this->errors[] = new OAI2Exception('badResumptionToken');
                         }
@@ -228,99 +192,69 @@ class OAI2Server {
                 }
             }
             if (isset($this->args['from'])) {
-                if(!$this->checkDateFormat($this->args['from'])) {
+                if (!$this->checkDateFormat($this->args['from'])) {
                     $this->errors[] = new OAI2Exception('badArgument');
                 }
             }
             if (isset($this->args['until'])) {
-                if(!$this->checkDateFormat($this->args['until'])) {
+                if (!$this->checkDateFormat($this->args['until'])) {
                     $this->errors[] = new OAI2Exception('badArgument');
                 }
             }
+            if (isset($this->args['set'])) {
+               $this->errors[] = new OAI2Exception('noSetHierarchy');
+            }
         }
-
         if (empty($this->errors)) {
             try {
-
-                $records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $from, $until, $set, true);
-
-                $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $from, $until, $set, false, $deliveredRecords, $maxItems);
-
+                $records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true);
+                $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
-
-                    $identifier = $record['identifier'];
-                    $datestamp = $this->formatDatestamp($record['datestamp']);
-                    $setspec = $record['set'];
-
-                    $status_deleted = (isset($record['deleted']) && ($record['deleted'] === true) &&
-                                        (($this->identifyResponse['deletedRecord'] == 'transient') ||
-                                         ($this->identifyResponse['deletedRecord'] == 'persistent')));
-
-                    if($this->verb == 'ListRecords') {
+                    if ($this->verb == 'ListRecords') {
                         $cur_record = $this->response->addToVerbNode('record');
-                        $cur_header = $this->response->createHeader($identifier, $datestamp,$setspec,$cur_record);
-                        if (!$status_deleted) {
-                            $this->add_metadata($cur_record, $record);
-                        }	
+                        $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $cur_record);
+                        $this->add_metadata($cur_record, $record['metadata']);
                     } else { // for ListIdentifiers, only identifiers will be returned.
-                        $cur_header = $this->response->createHeader($identifier, $datestamp,$setspec);
-                    }
-                    if ($status_deleted) {
-                        $cur_header->setAttribute("status","deleted");
+                        $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']));
                     }
                 }
-
                 // Will we need a new ResumptionToken?
                 if ($records_count - $deliveredRecords > $maxItems) {
-
                     $deliveredRecords +=  $maxItems;
                     $restoken = $this->createResumptionToken($deliveredRecords);
-
-                    $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);	
-
+                    $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);
                 } elseif (isset($args['resumptionToken'])) {
                     // Last delivery, return empty ResumptionToken
                     $restoken = null;
                     $expirationDatetime = null;
                 }
-
                 if (isset($restoken)) {
-                    $this->response->createResumptionToken($restoken,$expirationDatetime,$records_count,$deliveredRecords);
+                    $this->response->createResumptionToken($restoken, $expirationDatetime, $records_count, $deliveredRecords);
                 }
-
             } catch (OAI2Exception $e) {
                 $this->errors[] = $e;
             }
         }
     }
 
-    private function add_metadata($cur_record, $record) {
-
-        $meta_node =  $this->response->addChild($cur_record ,"metadata");
-
-        $schema_node = $this->response->addChild($meta_node, $record['metadata']['container_name']);
-        foreach ($record['metadata']['container_attributes'] as $name => $value) {
-            $schema_node->setAttribute($name, $value);
-        }
-        foreach ($record['metadata']['fields'] as $name => $value) {
-            $this->response->addChild($schema_node, $name, $value);
-        }
+    private function add_metadata($cur_record, $file) {
+      $meta_node =  $this->response->addChild($cur_record, 'metadata');
+      $fragment = new DOMDocument();
+      $fragment->load($file);
+      $this->response->importFragment($meta_node, $fragment);
     }
 
     private function createResumptionToken($delivered_records) {
-
         list($usec, $sec) = explode(" ", microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000));
-
         $fp = fopen ($this->token_prefix.$token, 'w');
         if($fp==false) {
-            exit("Cannot write. Writer permission needs to be changed.");
-        }	
+            exit('Cannot write resumption token. Writing permission needs to be changed.');
+        }
         fputs($fp, "$delivered_records#");
         fputs($fp, "$metadataPrefix#");
         fputs($fp, "{$this->args['from']}#");
         fputs($fp, "{$this->args['until']}#");
-        fputs($fp, "{$this->args['set']}#");
         fclose($fp);
         return $token;
     }
@@ -338,26 +272,24 @@ class OAI2Server {
         return $rtVal;
     }
 
-    /**
-     * All datestamps used in this system are GMT even
-     * return value from database has no TZ information
-     */
-    private function formatDatestamp($datestamp) {
-        return date("Y-m-d\TH:i:s\Z",strtotime($datestamp));
+    private function formatDatestamp($timestamp) {
+        return gmdate('Y-m-d\TH:i:s\Z', $timestamp);
     }
 
-    /**
-     * The database uses datastamp without time-zone information.
-     * It needs to clean all time-zone informaion from time string and reformat it
-     */
-    private function checkDateFormat($date) {
-        $date = str_replace(array("T","Z")," ",$date);
-        $time_val = strtotime($date);
-        if(!$time_val) return false;
-        if(strstr($date,":")) {
-            return date("Y-m-d H:i:s",$time_val);
+    private function formatTimestamp($datestamp) {
+        if (is_array($time = strptime($datestamp, '%Y-%m-%dT%H:%M:%SZ')) || is_array($time = strptime($datestamp, '%Y-%m-%d'))) {
+            return gmmktime($time['tm_hour'], $time['tm_min'], $time['tm_sec'], $time['tm_mon'] + 1, $time['tm_mday'], $time['tm_year']+1900);
         } else {
-            return date("Y-m-d",$time_val);
+            return null;
         }
     }
+
+    private function checkDateFormat($date) {
+        $dt = DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $date);
+        if ($dt === false) {
+            $dt = DateTime::createFromFormat('Y-m-d', $date);
+        }
+        return ($dt !== false) && !array_sum($dt->getLastErrors());
+    }
+
 }
