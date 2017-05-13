@@ -29,8 +29,8 @@ $config = array();
 // A human readable name for the repository
 $config['repositoryName'] = 'German Literature Archive, Marbach';
 
-// The base URL of the repository, i.e. the URL of the oai2.php file
-$config['baseURL'] = 'http://www.dla-marbach.de/oai2/oai2.php';
+// The base URL of the repository, i.e. the directory you deployed the files to
+$config['baseURL'] = 'http://www.dla-marbach.de/oai2/';
 
 // Email address for contacting the repository owner
 $config['adminEmail'] = 'info@dla-marbach.de';
