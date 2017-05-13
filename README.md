@@ -19,10 +19,10 @@ Installation
 History
 -------
 
-This project was originally initiated in 2002 by [Heinrich Stamerjohanns](stamer@uni-oldenburg.de) at [University of Oldenburg](https://www.uni-oldenburg.de/en/). His latest implementation can be still found via the [Internet Archive's Wayback Machine](https://web.archive.org/web/*/http://physnet.uni-oldenburg.de/oai/).
+This project was originally initiated in 2002 by [Heinrich Stamerjohanns](mailto:stamer@uni-oldenburg.de) at [University of Oldenburg](https://www.uni-oldenburg.de/en/). His latest implementation can be still found via the [Internet Archive's Wayback Machine](https://web.archive.org/web/*/http://physnet.uni-oldenburg.de/oai/).
 
-It was then modified in 2011 by [Jianfeng Li](jianfeng.li@adelaide.edu.au) of the [University of Adelaide](http://www.adelaide.edu.au/) for [The Plant Accelerator](http://www.plantaccelerator.org.au/). The modified version can be found in the [Google Code Archive](https://code.google.com/archive/p/oai-pmh-2/).
+It was then modified in 2011 by [Jianfeng Li](mailto:jianfeng.li@adelaide.edu.au) of the [University of Adelaide](http://www.adelaide.edu.au/) for [The Plant Accelerator](http://www.plantaccelerator.org.au/). The modified version can be found in the [Google Code Archive](https://code.google.com/archive/p/oai-pmh-2/).
 
-In 2013 [Daniel Neis Araujo](danielneis@gmail.com) of the [Federal University of Santa Catarina](http://en.ufsc.br/) modified the project again in order to integrate it with [Moodle](https://moodle.org/). His implementation can be found on [GitHub](https://github.com/danielneis/oai_pmh).
+In 2013 [Daniel Neis Araujo](mailto:danielneis@gmail.com) of the [Federal University of Santa Catarina](http://en.ufsc.br/) modified the project again in order to integrate it with [Moodle](https://moodle.org/). His implementation can be found on [GitHub](https://github.com/danielneis/oai_pmh).
 
-The current implementation was derived from the latter in 2017 by [Sebastian Meyer](sebastian.meyer@opencultureconsutling.com) of [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](http://www.dla-marbach.de/en/).
+The current implementation was derived from the latter in 2017 by [Sebastian Meyer](mailto:sebastian.meyer@opencultureconsutling.com) of [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](http://www.dla-marbach.de/en/).
