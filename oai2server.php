@@ -169,10 +169,10 @@ class OAI2Server {
             if (count($this->args) > 1) {
                 $this->errors[] = new OAI2Exception('badArgument');
             } else {
-                if ((int)$this->args['resumptionToken']+$this->token_valid < time()) {
+                if (!file_exists($this->token_prefix.$this->args['resumptionToken'])) {
                     $this->errors[] = new OAI2Exception('badResumptionToken');
                 } else {
-                    if (!file_exists($this->token_prefix.$this->args['resumptionToken'])) {
+                    if (filemtime($this->token_prefix.$this->args['resumptionToken'])+$this->token_valid < time()) {
                         $this->errors[] = new OAI2Exception('badResumptionToken');
                     } else {
                         if ($readings = $this->readResumptionToken($this->token_prefix.$this->args['resumptionToken'])) {
