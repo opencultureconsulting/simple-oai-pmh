@@ -169,7 +169,7 @@ class OAI2Server {
             if (count($this->args) > 1) {
                 $this->errors[] = new OAI2Exception('badArgument');
             } else {
-                if ((int)$val+$this->token_valid < time()) {
+                if ((int)$this->args['resumptionToken']+$this->token_valid < time()) {
                     $this->errors[] = new OAI2Exception('badResumptionToken');
                 } else {
                     if (!file_exists($this->token_prefix.$this->args['resumptionToken'])) {
@@ -246,16 +246,22 @@ class OAI2Server {
     }
 
     private function createResumptionToken($delivered_records) {
-        list($usec, $sec) = explode(" ", microtime());
+        list($usec, $sec) = explode(' ', microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000));
         $fp = fopen ($this->token_prefix.$token, 'w');
         if($fp==false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
-        fputs($fp, "$delivered_records#");
-        fputs($fp, "$metadataPrefix#");
-        fputs($fp, "{$this->args['from']}#");
-        fputs($fp, "{$this->args['until']}#");
+        $values = array(
+            'deliveredRecords' => $delivered_records,
+            'metadataPrefix' => isset($this->args['metadataPrefix']) ? $this->args['metadataPrefix'] : '',
+            'from' => isset($this->args['from']) ? $this->args['from'] : '',
+            'until' => isset($this->args['until']) ? $this->args['until'] : ''
+        );
+        fputs($fp, $values['deliveredRecords'].'#');
+        fputs($fp, $values['metadataPrefix'].'#');
+        fputs($fp, $values['from'].'#');
+        fputs($fp, $values['until'].'#');
         fclose($fp);
         return $token;
     }
