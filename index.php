@@ -1,7 +1,8 @@
 <?php
 /**
  * Simple OAI-PMH 2.0 Data Provider
- * Copyright (C) 2011 Jianfeng Li
+ * Copyright (C) 2005 Heinrich Stamerjohanns <stamer@uni-oldenburg.de>
+ * Copyright (C) 2011 Jianfeng Li <jianfeng.li@adelaide.edu.au>
  * Copyright (C) 2013 Daniel Neis Araujo <danielneis@gmail.com>
  * Copyright (C) 2017 Sebastian Meyer <sebastian.meyer@opencultureconsulting.com>
  *
@@ -92,7 +93,7 @@ $oai2 = new OAI2Server(
         throw new OAI2Exception('idDoesNotExist');
       } else {
         return array(
-          $config['metadataFormat'] => array (
+          $config['metadataFormat'] => array(
             'metadataPrefix' => $config['metadataFormat'],
             'schema'=> $config['metadataSchema'],
             'metadataNamespace' => $config['metadataNamespace']
