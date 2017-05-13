@@ -23,6 +23,6 @@ This project was originally initiated in 2002 by [Heinrich Stamerjohanns](mailto
 
 It was then modified in 2011 by [Jianfeng Li](mailto:jianfeng.li@adelaide.edu.au) at [University of Adelaide](http://www.adelaide.edu.au/) for [The Plant Accelerator](http://www.plantaccelerator.org.au/). The modified version can be found in the [Google Code Archive](https://code.google.com/archive/p/oai-pmh-2/).
 
-In 2013 [Daniel Neis Araujo](mailto:danielneis@gmail.com) at [Federal University of Santa Catarina](http://en.ufsc.br/) modified the project again in order to integrate it with [Moodle](https://moodle.org/). His implementation can be found on [GitHub](https://github.com/danielneis/oai_pmh).
+In 2013 [Daniel Neis Araujo](mailto:danielneis@gmail.com) at [Federal University of Santa Catarina](http://en.ufsc.br/) modified the project again in order to integrate it with [Moodle](https://moodle.org/). His implementation can be found on [GitHub](https://github.com/danielneis/oai_pmh). In 2014 [Kazimierz Pietruszewski](antenna@antenna.io) provided some [further bugfixes](https://github.com/antennaio/oai_pmh).
 
-The current implementation was derived from the latter in 2017 by [Sebastian Meyer](mailto:sebastian.meyer@opencultureconsutling.com) at [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](http://www.dla-marbach.de/en/).
+The current implementation was derived from the latter in 2017 by [Sebastian Meyer](mailto:sebastian.meyer@opencultureconsutling.com) at [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](http://www.dla-marbach.de/en/). It is a simplified stand-alone version focused on easy deployment and file based record handling.
