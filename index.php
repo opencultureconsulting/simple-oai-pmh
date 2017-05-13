@@ -57,6 +57,7 @@ $oai2 = new OAI2Server(
   array(
     'GetRecord' =>
     function($identifier, $metadataPrefix) {
+      global $records;
       if (empty($records[$identifier])) {
         return array();
       } else {
@@ -69,6 +70,7 @@ $oai2 = new OAI2Server(
     },
     'ListRecords' =>
     function($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
+      global $records, $timestamps;
       $resultSet = array();
       foreach($timestamps as $timestamp => $identifiers) {
         if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
@@ -89,14 +91,14 @@ $oai2 = new OAI2Server(
     },
     'ListMetadataFormats' =>
     function($identifier = '') {
-      if (!empty($identifier) && empty($records[$identifier]) {
+      global $config;
+      if (!empty($identifier) && empty($records[$identifier])) {
         throw new OAI2Exception('idDoesNotExist');
       } else {
         return array(
           $config['metadataFormat'] => array(
-            'metadataPrefix' => $config['metadataFormat'],
             'schema'=> $config['metadataSchema'],
-            'metadataNamespace' => $config['metadataNamespace']
+            'namespace' => $config['metadataNamespace']
           )
         );
       }

@@ -105,7 +105,7 @@ class OAI2Server {
                         $cmf = $this->response->addToVerbNode('metadataFormat');
                         $this->response->addChild($cmf, 'metadataPrefix', $key);
                         $this->response->addChild($cmf, 'schema', $val['schema']);
-                        $this->response->addChild($cmf, 'metadataNamespace', $val['metadataNamespace']);
+                        $this->response->addChild($cmf, 'metadataNamespace', $val['namespace']);
                     }
                 } else {
                     $this->errors[] = new OAI2Exception('noMetadataFormats');
