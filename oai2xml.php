@@ -34,12 +34,11 @@ class OAI2XMLResponse {
       $this->addChild($oai_node, 'responseDate', gmdate('Y-m-d\TH:i:s\Z'));
       $this->doc->appendChild($oai_node);
       $request = $this->addChild($this->doc->documentElement, 'request', $uri);
-      $request->setAttribute('verb', $this->verb);
+      if (!empty($this->verb)) {
+        $request->setAttribute('verb', $this->verb);
+      }
       foreach($request_args as $key => $value) {
         $request->setAttribute($key, $value);
-      }
-      if (!empty($this->verb)) {
-        $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb);
       }
     }
 
@@ -67,6 +66,9 @@ class OAI2XMLResponse {
      * @param $value    Type: string. The content of appending node.
      */
     function addToVerbNode($nodeName, $value = null) {
+      if (!isset($this->verbNode) && !empty($this->verb)) {
+        $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb);
+      }
       return $this->addChild($this->verbNode, $nodeName, $value);
     }
 

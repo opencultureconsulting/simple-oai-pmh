@@ -129,16 +129,13 @@ class OAI2Server {
     }
 
     public function GetRecord() {
-        if (!isset($this->args['metadataPrefix'])) {
+        if (!isset($this->args['identifier']) || !isset($this->args['metadataPrefix'])) {
             $this->errors[] = new OAI2Exception('badArgument');
         } else {
             $metadataFormats = call_user_func($this->listMetadataFormatsCallback);
             if (!isset($metadataFormats[$this->args['metadataPrefix']])) {
                 $this->errors[] = new OAI2Exception('cannotDisseminateFormat');
             }
-        }
-        if (!isset($this->args['identifier'])) {
-            $this->errors[] = new OAI2Exception('badArgument');
         }
         if (empty($this->errors)) {
             try {
@@ -208,7 +205,9 @@ class OAI2Server {
         }
         if (empty($this->errors)) {
             try {
-                $records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true);
+                if (!($records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true))) {
+                    throw new OAI2Exception('noRecordsMatch');
+                }
                 $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
                     if ($this->verb == 'ListRecords') {
@@ -230,7 +229,7 @@ class OAI2Server {
                     $expirationDatetime = null;
                 }
                 if (isset($restoken)) {
-                    $this->response->createResumptionToken($restoken, $expirationDatetime, $records_count, $deliveredRecords);
+                    $this->response->createResumptionToken($restoken, $expirationDatetime, $records_count, $deliveredRecords-$maxItems);
                 }
             } catch (OAI2Exception $e) {
                 $this->errors[] = $e;
