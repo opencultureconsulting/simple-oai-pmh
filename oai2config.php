@@ -27,18 +27,18 @@
 $config = array();
 
 // A human readable name for the repository
-$config['repositoryName'] = 'German Literature Archive, Marbach';
+$config['repositoryName'] = 'Simple OAI 2.0 Data Provider';
 
 // The base URL of the repository, i.e. the directory you deployed the files to
-$config['baseURL'] = 'http://www.dla-marbach.de/oai2/';
+$config['baseURL'] = 'http://www.example.org/oai2/';
 
 // Email address for contacting the repository owner
-$config['adminEmail'] = 'info@dla-marbach.de';
+$config['adminEmail'] = 'admin@example.org';
 
 // Metadata format, schema and namespace of your records
-$config['metadataFormat'] = 'ead';
-$config['metadataSchema'] = 'https://www.loc.gov/ead/ead.xsd';
-$config['metadataNamespace'] = 'urn:isbn:1-931666-22-9';
+$config['metadataFormat'] = 'oai_dc';
+$config['metadataSchema'] = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
+$config['metadataNamespace'] = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
 
 // Maximum number of records to return before giving a resumption token
 $config['maxRecords'] = 100;
