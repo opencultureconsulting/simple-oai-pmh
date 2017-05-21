@@ -5,6 +5,8 @@ This is a stand-alone and easy to install data provider for the [Open Archives I
 
 Just put the records as XML files in the data directory, adjust a few configuration settings and you are ready to go!
 
+A demo installation can be found [here](http://demo.opencultureconsulting.com/oai_pmh/?verb=Identify).
+
 Installation
 ------------
 
