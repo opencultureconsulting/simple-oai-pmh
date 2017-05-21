@@ -39,10 +39,17 @@ reset($records);
 ksort($timestamps);
 reset($timestamps);
 
+// Get current base URL
+if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
+  $baseURL = 'https://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+} else {
+  $baseURL = 'http://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+}
+
 // Build the Identify response
 $identifyResponse = array(
   'repositoryName' => $config['repositoryName'],
-  'baseURL' => $config['baseURL'],
+  'baseURL' => $baseURL,
   'protocolVersion' => '2.0',
   'adminEmail' => $config['adminEmail'],
   'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', key($timestamps)),
@@ -51,7 +58,7 @@ $identifyResponse = array(
 );
 
 $oai2 = new OAI2Server(
-  'http://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH),
+  $baseURL,
   $_GET,
   $identifyResponse,
   array(

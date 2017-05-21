@@ -29,9 +29,6 @@ $config = array();
 // A human readable name for the repository
 $config['repositoryName'] = 'Simple OAI 2.0 Data Provider';
 
-// The base URL of the repository, i.e. the directory you deployed the files to
-$config['baseURL'] = 'http://www.example.org/oai2/';
-
 // Email address for contacting the repository owner
 $config['adminEmail'] = 'admin@example.org';
 
