@@ -68,8 +68,8 @@ class OAI2Server {
             $errorResponse = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
             $oai_node = $errorResponse->doc->documentElement;
             foreach($this->errors as $e) {
-                $node = $errorResponse->addChild($oai_node,"error",$e->getMessage());
-                $node->setAttribute("code",$e->getOAI2Code());
+                $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
+                $node->setAttribute('code', $e->getOAI2Code());
             }
             return $errorResponse->doc;
         }
@@ -248,7 +248,7 @@ class OAI2Server {
         list($usec, $sec) = explode(' ', microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000));
         $fp = fopen ($this->token_prefix.$token, 'w');
-        if($fp==false) {
+        if($fp == false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
         $values = array(

@@ -37,6 +37,10 @@ $config['metadataFormat'] = 'oai_dc';
 $config['metadataSchema'] = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
 $config['metadataNamespace'] = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
 
+// Directory containing the records
+// (Make sure the given path is readable)
+$config['dataDirectory'] = 'data/';
+
 // Maximum number of records to return before giving a resumption token
 $config['maxRecords'] = 100;
 

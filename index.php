@@ -27,7 +27,7 @@ require_once('oai2server.php');
 $records = array();
 $timestamps = array();
 
-$files = glob('data/*.xml');
+$files = glob(rtrim($config['dataDirectory'], '/').'/*.xml');
 foreach($files as $file) {
   $records[pathinfo($file, PATHINFO_FILENAME)] = $file;
   $timestamps[filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
@@ -40,10 +40,11 @@ ksort($timestamps);
 reset($timestamps);
 
 // Get current base URL
+$baseURL = $_SERVER['HTTP_HOST'].parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-  $baseURL = 'https://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+  $baseURL = 'https://'.$baseURL;
 } else {
-  $baseURL = 'http://'.$_SERVER['HTTP_HOST'].parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+  $baseURL = 'http://'.$baseURL;
 }
 
 // Build the Identify response

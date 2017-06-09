@@ -12,9 +12,9 @@ Installation
 
 1. Deploy all the files to a webserver.
 
-2. Put the records into the data/ directory (or create a symlink named "data" pointing to your records). Each record has to be a separate XML file with its identifier as filename (i.e. 12345678.xml).
+2. Edit oai2config.php and adjust the settings according to your preferences.
 
-3. Edit oai2config.php and adjust the settings according to your preferences.
+3. Put the records into the specified data directory. Each record has to be a separate XML file with its identifier as filename (i.e. 12345678.xml).
 
 4. Congratulations! Now you are running an OAI-PMH 2.0 compatible data provider.
 
