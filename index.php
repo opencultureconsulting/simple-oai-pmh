@@ -23,13 +23,15 @@
 require_once('oai2config.php');
 require_once('oai2server.php');
 
-// Get all available records and their respective timestamps
+// Get all available records and their respective status and timestamps
 $records = array();
+$deleted = array();
 $timestamps = array();
 
 $files = glob(rtrim($config['dataDirectory'], '/').'/*.xml');
 foreach($files as $file) {
   $records[pathinfo($file, PATHINFO_FILENAME)] = $file;
+  $deleted[pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
   $timestamps[filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
 };
 
@@ -54,7 +56,7 @@ $identifyResponse = array(
   'protocolVersion' => '2.0',
   'adminEmail' => $config['adminEmail'],
   'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', key($timestamps)),
-  'deletedRecord' => 'no',
+  'deletedRecord' => $config['deletedRecord'],
   'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
 );
 
@@ -65,20 +67,21 @@ $oai2 = new OAI2Server(
   array(
     'GetRecord' =>
     function($identifier, $metadataPrefix) {
-      global $records;
+      global $records, $deleted;
       if (empty($records[$identifier])) {
         return array();
       } else {
         return array(
           'identifier' => $identifier,
           'timestamp' => filemtime($records[$identifier]),
+          'deleted' => $deleted[$identifier],
           'metadata' => $records[$identifier]
         );
       }
     },
     'ListRecords' =>
     function($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
-      global $records, $timestamps;
+      global $records, $deleted, $timestamps;
       $resultSet = array();
       foreach($timestamps as $timestamp => $identifiers) {
         if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
@@ -86,6 +89,7 @@ $oai2 = new OAI2Server(
             $resultSet[] = array(
               'identifier' => $identifier,
               'timestamp' => filemtime($records[$identifier]),
+              'deleted' => $deleted[$identifier],
               'metadata' => $records[$identifier]
             );
           }

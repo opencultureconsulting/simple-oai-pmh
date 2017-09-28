@@ -60,7 +60,7 @@ class OAI2XMLResponse {
     /**
      * Add direct child nodes to verb node (OAI-PMH), e.g. response to ListMetadataFormats.
      * Different verbs can have different required child nodes.
-     * @see create_record, create_header
+     * @see createHeader, importFragment
      *
      * @param $nodeName Type: string. The name of appending node.
      * @param $value    Type: string. The content of appending node.
@@ -76,13 +76,14 @@ class OAI2XMLResponse {
      * Headers are enclosed inside of <record> to the query of ListRecords, ListIdentifiers and etc.
      *
      * @param $identifier  Type: string. The identifier string for node <identifier>.
-     * @param $timestamp   Type: timestamp. Timestapme in UTC format for node <datastamp>.
+     * @param $timestamp   Type: timestamp. Timestamp in UTC format for node <datastamp>.
+     * @param $deleted     Type: boolean. Deleted status for the record.
      * @param $add_to_node Type: DOMElement. Default value is null.
      * In normal cases, $add_to_node is the <record> node created previously.
      * When it is null, the newly created header node is attatched to $this->verbNode.
-     * Otherwise it will be attatched to the desired node defined in $add_to_node.
+     * Otherwise it will be attached to the desired node defined in $add_to_node.
      */
-    function createHeader($identifier, $timestamp, $add_to_node = null) {
+    function createHeader($identifier, $timestamp, $deleted = false, $add_to_node = null) {
       if(is_null($add_to_node)) {
         $header_node = $this->addToVerbNode('header');
       } else {
@@ -90,6 +91,9 @@ class OAI2XMLResponse {
       }
       $this->addChild($header_node, 'identifier', $identifier);
       $this->addChild($header_node, 'datestamp', $timestamp);
+      if($deleted) {
+        $header_node->setAttribute('status', 'deleted');
+      }
       return $header_node;
     }
 

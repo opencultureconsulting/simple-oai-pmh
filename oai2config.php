@@ -22,6 +22,7 @@
 
 /**
  * This file contains all configuration you need to change according to your preferences
+ * @see http://www.openarchives.org/OAI/2.0/openarchivesprotocol.htm for further explanation
  */
 
 $config = array();
@@ -32,20 +33,31 @@ $config['repositoryName'] = 'Simple OAI 2.0 Data Provider';
 // Email address for contacting the repository owner
 $config['adminEmail'] = 'admin@example.org';
 
+// Do you provide 0-byte files for deleted records?
+// Possible values:
+//  "no" -> the repository does not maintain information about deletions
+//  "transient" -> the repository maintains information about deletions, but
+//                 does not guarantee them to be persistent (default)
+//  "persistent" -> the repository maintains information about deletions with
+//                  no time limit
+$config['deletedRecord'] = 'transient';
+
 // Metadata format, schema and namespace of your records
+// (The default is OAI_DC which is also required by the OAI-PMH specification,
+// but technically you can deliver any XML based data format you want.)
 $config['metadataFormat'] = 'oai_dc';
 $config['metadataSchema'] = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
 $config['metadataNamespace'] = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
 
 // Directory containing the records
-// (Make sure the given path is readable)
+// (Make sure the given path is readable.)
 $config['dataDirectory'] = 'data/';
 
 // Maximum number of records to return before giving a resumption token
 $config['maxRecords'] = 100;
 
 // Path and prefix for saving resumption tokens
-// (Make sure the given path is writable)
+// (Make sure the given path is writable.)
 $config['tokenPrefix'] = '/tmp/oai2-';
 
 // Number of seconds a resumption token should be valid

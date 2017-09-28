@@ -32,9 +32,10 @@ class OAI2Server {
     public $errors = array();
     private $args = array();
     private $verb = '';
+    private $deleted_record = 'transient';
+    private $max_records = 100;
     private $token_prefix = '/tmp/oai2-';
     private $token_valid = 86400;
-    private $max_records = 100;
 
     public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
         $this->uri = $uri;
@@ -50,9 +51,10 @@ class OAI2Server {
                 $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
                 $this->listRecordsCallback = $callbacks['ListRecords'];
                 $this->getRecordCallback = $callbacks['GetRecord'];
+                $this->deleted_record = $config['deletedRecord'];
+                $this->max_records = $config['maxRecords'];
                 $this->token_prefix = $config['tokenPrefix'];
                 $this->token_valid = $config['tokenValid'];
-                $this->max_records = $config['maxRecords'];
                 $this->response = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
                 call_user_func(array($this, $this->verb));
             } else {
@@ -141,8 +143,10 @@ class OAI2Server {
             try {
                 if ($record = call_user_func($this->getRecordCallback, $this->args['identifier'], $this->args['metadataPrefix'])) {
                     $cur_record = $this->response->addToVerbNode('record');
-                    $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $cur_record);
-                    $this->add_metadata($cur_record, $record['metadata']);
+                    $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
+                    if (!$record['deleted']) {
+                      $this->addMetadata($cur_record, $record['metadata']);
+                    }
                 } else {
                     $this->errors[] = new OAI2Exception('idDoesNotExist');
                 }
@@ -210,12 +214,10 @@ class OAI2Server {
                 }
                 $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
-                    if ($this->verb == 'ListRecords') {
-                        $cur_record = $this->response->addToVerbNode('record');
-                        $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $cur_record);
-                        $this->add_metadata($cur_record, $record['metadata']);
-                    } else { // for ListIdentifiers, only identifiers will be returned.
-                        $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']));
+                    $cur_record = $this->response->addToVerbNode('record');
+                    $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
+                    if (!$record['deleted'] && $this->verb == 'ListRecords') { // for ListIdentifiers, only identifiers will be returned.
+                      $this->addMetadata($cur_record, $record['metadata']);
                     }
                 }
                 // Will we need a new ResumptionToken?
@@ -237,7 +239,7 @@ class OAI2Server {
         }
     }
 
-    private function add_metadata($cur_record, $file) {
+    private function addMetadata($cur_record, $file) {
       $meta_node =  $this->response->addChild($cur_record, 'metadata');
       $fragment = new DOMDocument();
       $fragment->load($file);
