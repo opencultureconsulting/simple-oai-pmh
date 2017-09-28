@@ -26,7 +26,10 @@ class OAI2XMLResponse {
 
     public function __construct($uri, $verb, $request_args) {
       $this->verb = $verb;
+      $stylesheet = $_SERVER['HTTP_HOST'].pathinfo(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), PATHINFO_DIRNAME).'/oai2transform.xsl';
+      $stylesheet = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://'.$stylesheet : 'http://'.$stylesheet;
       $this->doc = new DOMDocument('1.0', 'UTF-8');
+      $this->doc->appendChild($this->doc->createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="'.$stylesheet.'"'));
       $oai_node = $this->doc->createElement('OAI-PMH');
       $oai_node->setAttribute('xmlns', 'http://www.openarchives.org/OAI/2.0/');
       $oai_node->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
