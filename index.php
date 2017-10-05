@@ -27,19 +27,23 @@ require_once('oai2server.php');
 $records = array();
 $deleted = array();
 $timestamps = array();
+$earliest = time();
 
-$files = glob(rtrim($config['dataDirectory'], '/').'/*.xml');
-foreach($files as $file) {
-  $records[pathinfo($file, PATHINFO_FILENAME)] = $file;
-  $deleted[pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
-  $timestamps[filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
-};
-
-ksort($records);
-reset($records);
-
-ksort($timestamps);
-reset($timestamps);
+foreach($config['metadataFormats'] as $prefix => $uris) {
+  $files = glob(rtrim($config['dataDirectory'], '/').'/'.$prefix.'/*.xml');
+  foreach($files as $file) {
+    $records[$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
+    $deleted[$prefix][pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
+    $timestamps[$prefix][filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
+    if (filemtime($file) < $earliest) {
+      $earliest = filemtime($file);
+    }
+  }
+  ksort($records[$prefix]);
+  reset($records[$prefix]);
+  ksort($timestamps[$prefix]);
+  reset($timestamps[$prefix]);
+}
 
 // Get current base URL
 $baseURL = $_SERVER['HTTP_HOST'].parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -55,7 +59,7 @@ $identifyResponse = array(
   'baseURL' => $baseURL,
   'protocolVersion' => '2.0',
   'adminEmail' => $config['adminEmail'],
-  'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', key($timestamps)),
+  'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $earliest),
   'deletedRecord' => $config['deletedRecord'],
   'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
 );
@@ -68,14 +72,14 @@ $oai2 = new OAI2Server(
     'GetRecord' =>
     function($identifier, $metadataPrefix) {
       global $records, $deleted;
-      if (empty($records[$identifier])) {
+      if (empty($records[$metadataPrefix][$identifier])) {
         return array();
       } else {
         return array(
           'identifier' => $identifier,
-          'timestamp' => filemtime($records[$identifier]),
-          'deleted' => $deleted[$identifier],
-          'metadata' => $records[$identifier]
+          'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+          'deleted' => $deleted[$metadataPrefix][$identifier],
+          'metadata' => $records[$metadataPrefix][$identifier]
         );
       }
     },
@@ -83,14 +87,14 @@ $oai2 = new OAI2Server(
     function($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
       global $records, $deleted, $timestamps;
       $resultSet = array();
-      foreach($timestamps as $timestamp => $identifiers) {
+      foreach($timestamps[$metadataPrefix] as $timestamp => $identifiers) {
         if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
           foreach($identifiers as $identifier) {
             $resultSet[] = array(
               'identifier' => $identifier,
-              'timestamp' => filemtime($records[$identifier]),
-              'deleted' => $deleted[$identifier],
-              'metadata' => $records[$identifier]
+              'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+              'deleted' => $deleted[$metadataPrefix][$identifier],
+              'metadata' => $records[$metadataPrefix][$identifier]
             );
           }
         }
@@ -103,16 +107,21 @@ $oai2 = new OAI2Server(
     },
     'ListMetadataFormats' =>
     function($identifier = '') {
-      global $config;
-      if (!empty($identifier) && empty($records[$identifier])) {
-        throw new OAI2Exception('idDoesNotExist');
+      global $config, $records;
+      if (!empty($identifier) {
+        $formats = array();
+        foreach($records as $format => $record) {
+          if (!empty($record[$identifier])) {
+            $formats[$format] = $config['metadataFormats'][$format];
+          }
+        }
+        if (!empty($formats)) {
+          return $formats;
+        } else {
+          throw new OAI2Exception('idDoesNotExist');
+        }
       } else {
-        return array(
-          $config['metadataFormat'] => array(
-            'schema'=> $config['metadataSchema'],
-            'namespace' => $config['metadataNamespace']
-          )
-        );
+        return $config['metadataFormats'];
       }
     }
   ),

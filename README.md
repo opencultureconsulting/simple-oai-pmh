@@ -1,7 +1,7 @@
 Simple OAI-PMH 2.0 Data Provider
 ================================
 
-This is a stand-alone and easy to install data provider for the [Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH)](http://openarchives.org/pmh/) written in [PHP](http://php.net/). It serves records in any metadata format from a directory of XML files using the filename as identifier and the filemtime as datestamp. 0-byte files are considered deleted records and handled accordingly. Resumption tokens are managed using files. Multiple metadata formats and sets are currently not supported.
+This is a stand-alone and easy to install data provider for the [Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH)](http://openarchives.org/pmh/) written in [PHP](http://php.net/). It serves records in any metadata format from directories of XML files using the directory name as metadata prefix, the filename as identifier and the filemtime as datestamp. 0-byte files are considered deleted records and handled accordingly. Resumption tokens are managed using files. Sets are currently not supported.
 
 Just put the records as XML files in the data directory, adjust a few configuration settings and you are ready to go!
 

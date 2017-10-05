@@ -34,7 +34,8 @@ $config['repositoryName'] = 'Simple OAI 2.0 Data Provider';
 $config['adminEmail'] = 'admin@example.org';
 
 // Do you provide 0-byte files for deleted records?
-// Possible values:
+//
+//  Possible values:
 //  "no" -> the repository does not maintain information about deletions
 //  "transient" -> the repository maintains information about deletions, but
 //                 does not guarantee them to be persistent (default)
@@ -42,22 +43,31 @@ $config['adminEmail'] = 'admin@example.org';
 //                  no time limit
 $config['deletedRecord'] = 'transient';
 
-// Metadata format, schema and namespace of your records
-// (The default is OAI_DC which is also required by the OAI-PMH specification,
-// but technically you can deliver any XML based data format you want.)
-$config['metadataFormat'] = 'oai_dc';
-$config['metadataSchema'] = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd';
-$config['metadataNamespace'] = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
+// Metadata formats, schemas and namespaces of your records
+//
+//  The default is 'oai_dc' which is also required by the OAI-PMH specification,
+//  but technically you can deliver any XML based data format you want. Just add
+//  another entry with the 'metadataPrefix' as key and schema/namespace URIs as
+//  array values or replace the default 'oai_dc' entry (not recommended).
+$config['metadataFormats'] = array(
+  'oai_dc' => array(
+    'schema' = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
+    'namespace' = 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+  ),
+);
 
 // Directory containing the records
-// (Make sure the given path is readable.)
+//
+//  Make sure the given path is readable and there is a subdirectory for every
+//  'metadataPrefix' you specified above.
 $config['dataDirectory'] = 'data/';
 
 // Maximum number of records to return before giving a resumption token
 $config['maxRecords'] = 100;
 
 // Path and prefix for saving resumption tokens
-// (Make sure the given path is writable.)
+//
+//  Make sure the given path is writable.
 $config['tokenPrefix'] = '/tmp/oai2-';
 
 // Number of seconds a resumption token should be valid

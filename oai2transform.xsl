@@ -147,11 +147,11 @@ p.intro {
 <xsl:template match="/">
 <html>
 	<head>
-		<title>OAI 2.0 Request Results</title>
+		<title>OAI-PMH 2.0 Request Results</title>
 		<style><xsl:call-template name="style"/></style>
 	</head>
 	<body>
-		<h1>OAI 2.0 Request Results</h1>
+		<h1>OAI-PMH 2.0 Request Results</h1>
 		<xsl:call-template name="quicklinks"/>
 		<p class="intro">You are viewing an HTML version of the XML OAI response. To see the underlying XML as it appears to any OAI harvester use your web browser's view source option or disable XSLT processing.</p>
 		<xsl:apply-templates select="/oai:OAI-PMH" />
@@ -230,7 +230,7 @@ p.intro {
 
 <xsl:template match="/oai:OAI-PMH/oai:Identify/oai:adminEmail">
 		<tr><td class="key">Admin Email</td>
-		<td class="value"><xsl:value-of select="."/></td></tr>
+		<td class="value"><a href="mailto:{.}"><xsl:value-of select="."/></a></td></tr>
 </xsl:template>
 
 <!--
