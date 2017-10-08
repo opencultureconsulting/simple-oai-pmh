@@ -51,8 +51,8 @@ $config['deletedRecord'] = 'transient';
 //  array values or replace the default 'oai_dc' entry (not recommended).
 $config['metadataFormats'] = array(
   'oai_dc' => array(
-    'schema' = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
-    'namespace' = 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+    'schema' => 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
+    'namespace' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',
   ),
 );
 
