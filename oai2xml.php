@@ -25,9 +25,13 @@ class OAI2XMLResponse {
     public $doc; // DOMDocument. Handle of current XML Document object
 
     public function __construct($uri, $verb, $request_args) {
+      if (substr($uri, -1, 1) == '/') {
+        $stylesheet = $uri.'oai2transform.xsl';
+      } else {
+        $stylesheet = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://' : 'http://';
+        $stylesheet .= $_SERVER['HTTP_HOST'].pathinfo(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), PATHINFO_DIRNAME).'/oai2transform.xsl';
+      }
       $this->verb = $verb;
-      $stylesheet = $_SERVER['HTTP_HOST'].pathinfo(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), PATHINFO_DIRNAME).'/oai2transform.xsl';
-      $stylesheet = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://'.$stylesheet : 'http://'.$stylesheet;
       $this->doc = new DOMDocument('1.0', 'UTF-8');
       $this->doc->appendChild($this->doc->createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="'.$stylesheet.'"'));
       $oai_node = $this->doc->createElement('OAI-PMH');

@@ -252,7 +252,7 @@ p.intro {
 	ListIdentifiers
 -->
 <xsl:template match="oai:ListIdentifiers">
-	<xsl:apply-templates select="oai:header" />
+	<xsl:apply-templates select="oai:record" />
 	<xsl:apply-templates select="oai:resumptionToken" />
 </xsl:template>
 
@@ -265,7 +265,7 @@ p.intro {
 			<p>This is a list of metadata formats available for the record "<xsl:value-of select='$identifier' />". Use these links to view the metadata: <xsl:apply-templates select="oai:metadataFormat/oai:metadataPrefix" /></p>
 		</xsl:when>
 		<xsl:otherwise>
-			<p>This is a list of metadata formats available from this repository. Click on a format's prefix to get all available records' identifier.</p>
+			<p>This is a list of metadata formats available from this repository. Click on a format's prefix to get all available records' identifiers.</p>
 		</xsl:otherwise>
 	</xsl:choose>
 	<xsl:apply-templates select="oai:metadataFormat" />

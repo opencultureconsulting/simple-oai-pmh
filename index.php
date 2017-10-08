@@ -108,7 +108,7 @@ $oai2 = new OAI2Server(
     'ListMetadataFormats' =>
     function($identifier = '') {
       global $config, $records;
-      if (!empty($identifier) {
+      if (!empty($identifier)) {
         $formats = array();
         foreach($records as $format => $record) {
           if (!empty($record[$identifier])) {
