@@ -14,9 +14,7 @@ Installation
 
 2. Edit oai2config.php and adjust the settings according to your preferences.
 
-3. Put the records into the specified data directory. Each record has to be a separate XML file with its identifier as filename (i.e. 12345678.xml).
-
-3a. Optionally you can maintain deletions by keeping 0-byte files in the data directory for deleted records.
+3. Put the records into the specified data directory. Each record has to be a separate XML file with its identifier as filename (i.e. 12345678.xml). Optionally you can maintain deletions by keeping 0-byte files for deleted records.
 
 4. Congratulations! Now you are running an OAI-PMH 2.0 compatible data provider.
 
