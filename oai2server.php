@@ -214,9 +214,11 @@ class OAI2Server {
                 }
                 $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
-                    $cur_record = $this->response->addToVerbNode('record');
+                    if ($this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
+                      $cur_record = $this->response->addToVerbNode('record');
+                    }
                     $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
-                    if (!$record['deleted'] && $this->verb == 'ListRecords') { // for ListIdentifiers, only identifiers will be returned.
+                    if (!$record['deleted'] && $this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
                       $this->addMetadata($cur_record, $record['metadata']);
                     }
                 }
