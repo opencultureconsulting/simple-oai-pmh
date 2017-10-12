@@ -145,7 +145,7 @@ class OAI2Server {
                     $cur_record = $this->response->addToVerbNode('record');
                     $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
                     if (!$record['deleted']) {
-                      $this->addMetadata($cur_record, $record['metadata']);
+                        $this->addMetadata($cur_record, $record['metadata']);
                     }
                 } else {
                     $this->errors[] = new OAI2Exception('idDoesNotExist');
@@ -215,11 +215,11 @@ class OAI2Server {
                 $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
                     if ($this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
-                      $cur_record = $this->response->addToVerbNode('record');
+                        $cur_record = $this->response->addToVerbNode('record');
                     }
                     $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
                     if (!$record['deleted'] && $this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
-                      $this->addMetadata($cur_record, $record['metadata']);
+                        $this->addMetadata($cur_record, $record['metadata']);
                     }
                 }
                 // Will we need a new ResumptionToken?
@@ -242,10 +242,10 @@ class OAI2Server {
     }
 
     private function addMetadata($cur_record, $file) {
-      $meta_node =  $this->response->addChild($cur_record, 'metadata');
-      $fragment = new DOMDocument();
-      $fragment->load($file);
-      $this->response->importFragment($meta_node, $fragment);
+        $meta_node =  $this->response->addChild($cur_record, 'metadata');
+        $fragment = new DOMDocument();
+        $fragment->load($file);
+        $this->response->importFragment($meta_node, $fragment);
     }
 
     private function createResumptionToken($delivered_records) {
