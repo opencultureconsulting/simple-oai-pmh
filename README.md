@@ -7,6 +7,8 @@ Just put the records as XML files in the data directory, adjust a few configurat
 
 A demo installation can be found [here](http://demo.opencultureconsulting.com/oai_pmh/?verb=Identify).
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cd72907ff98f4e01beb32576319b83a2)](https://www.codacy.com/app/OCC/OAI-PMH.DataProvider)
+
 Installation
 ------------
 
