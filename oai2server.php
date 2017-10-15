@@ -38,29 +38,25 @@ class OAI2Server {
     private $token_valid = 86400;
 
     public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
-        $this->uri = $uri;
-        if (!isset($args['verb']) || empty($args['verb'])) {
+        $verbs = array('Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord');
+        if (empty($args['verb']) || !in_array($args['verb'], $verbs)) {
             $this->errors[] = new OAI2Exception('badVerb');
-        } else {
-            $verbs = array('Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord');
-            if (in_array($args['verb'], $verbs)) {
-                $this->verb = $args['verb'];
-                unset($args['verb']);
-                $this->args = $args;
-                $this->identifyResponse = $identifyResponse;
-                $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
-                $this->listRecordsCallback = $callbacks['ListRecords'];
-                $this->getRecordCallback = $callbacks['GetRecord'];
-                $this->deleted_record = $config['deletedRecord'];
-                $this->max_records = $config['maxRecords'];
-                $this->token_prefix = $config['tokenPrefix'];
-                $this->token_valid = $config['tokenValid'];
-                $this->response = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
-                call_user_func(array($this, $this->verb));
-            } else {
-                $this->errors[] = new OAI2Exception('badVerb');
-            }
+            return;
         }
+        $this->uri = $uri;
+        $this->verb = $args['verb'];
+        unset($args['verb']);
+        $this->args = $args;
+        $this->identifyResponse = $identifyResponse;
+        $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
+        $this->listRecordsCallback = $callbacks['ListRecords'];
+        $this->getRecordCallback = $callbacks['GetRecord'];
+        $this->deleted_record = $config['deletedRecord'];
+        $this->max_records = $config['maxRecords'];
+        $this->token_prefix = $config['tokenPrefix'];
+        $this->token_valid = $config['tokenValid'];
+        $this->response = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
+        call_user_func(array($this, $this->verb));
     }
 
     public function response() {
@@ -249,8 +245,8 @@ class OAI2Server {
     private function createResumptionToken($delivered_records) {
         list($usec, $sec) = explode(' ', microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000));
-        $fp = fopen ($this->token_prefix.$token, 'w');
-        if($fp == false) {
+        $file = fopen ($this->token_prefix.$token, 'w');
+        if($file == false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
         $values = array(
@@ -259,21 +255,21 @@ class OAI2Server {
             'from' => isset($this->args['from']) ? $this->args['from'] : '',
             'until' => isset($this->args['until']) ? $this->args['until'] : ''
         );
-        fputs($fp, $values['deliveredRecords'].'#');
-        fputs($fp, $values['metadataPrefix'].'#');
-        fputs($fp, $values['from'].'#');
-        fputs($fp, $values['until'].'#');
-        fclose($fp);
+        fputs($file, $values['deliveredRecords'].'#');
+        fputs($file, $values['metadataPrefix'].'#');
+        fputs($file, $values['from'].'#');
+        fputs($file, $values['until'].'#');
+        fclose($file);
         return $token;
     }
 
     private function readResumptionToken($resumptionToken) {
         $rtVal = false;
-        $fp = fopen($resumptionToken, 'r');
-        if ($fp != false) {
-            $filetext = fgets($fp, 255);
+        $file = fopen($resumptionToken, 'r');
+        if ($file != false) {
+            $filetext = fgets($file, 255);
             $textparts = explode('#', $filetext);
-            fclose($fp);
+            fclose($file);
             unlink($resumptionToken);
             $rtVal = array_values($textparts);
         }
@@ -293,11 +289,11 @@ class OAI2Server {
     }
 
     private function checkDateFormat($date) {
-        $dt = DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $date);
-        if ($dt === false) {
-            $dt = DateTime::createFromFormat('Y-m-d', $date);
+        $datetime = DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $date);
+        if ($datetime === false) {
+            $datetime = DateTime::createFromFormat('Y-m-d', $date);
         }
-        return ($dt !== false) && !array_sum($dt->getLastErrors());
+        return ($datetime !== false) && !array_sum($dt->getLastErrors());
     }
 
 }
