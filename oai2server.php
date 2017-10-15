@@ -62,15 +62,14 @@ class OAI2Server {
     public function response() {
         if (empty($this->errors)) {
             return $this->response->doc;
-        } else {
-            $errorResponse = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
-            $oai_node = $errorResponse->doc->documentElement;
-            foreach($this->errors as $e) {
-                $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
-                $node->setAttribute('code', $e->getOAI2Code());
-            }
-            return $errorResponse->doc;
         }
+        $errorResponse = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
+        $oai_node = $errorResponse->doc->documentElement;
+        foreach($this->errors as $e) {
+            $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
+            $node->setAttribute('code', $e->getOAI2Code());
+        }
+        return $errorResponse->doc;
     }
 
     public function Identify() {
