@@ -90,15 +90,13 @@ class OAI2Server {
     }
 
     public function ListMetadataFormats() {
+        $identifier = '';
         foreach ($this->args as $argument => $value) {
             if ($argument != 'identifier') {
                 $this->errors[] = new OAI2Exception('badArgument');
+            } else {
+                $identifier = $value;
             }
-        }
-        if (isset($this->args['identifier'])) {
-            $identifier = $this->args['identifier'];
-        } else {
-            $identifier = '';
         }
         if (empty($this->errors)) {
             try {
@@ -143,7 +141,7 @@ class OAI2Server {
             try {
                 if ($record = call_user_func($this->getRecordCallback, $this->args['identifier'], $this->args['metadataPrefix'])) {
                     $cur_record = $this->response->addToVerbNode('record');
-                    $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
+                    $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
                     if (!$record['deleted']) {
                         $this->addMetadata($cur_record, $record['metadata']);
                     }
@@ -217,7 +215,7 @@ class OAI2Server {
                     if ($this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
                         $cur_record = $this->response->addToVerbNode('record');
                     }
-                    $cur_header = $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
+                    $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
                     if (!$record['deleted'] && $this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
                         $this->addMetadata($cur_record, $record['metadata']);
                     }
@@ -227,7 +225,7 @@ class OAI2Server {
                     $deliveredRecords +=  $maxItems;
                     $restoken = $this->createResumptionToken($deliveredRecords);
                     $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);
-                } elseif (isset($args['resumptionToken'])) {
+                } elseif (isset($this->args['resumptionToken'])) {
                     // Last delivery, return empty ResumptionToken
                     $restoken = null;
                     $expirationDatetime = null;
