@@ -293,7 +293,7 @@ class OAI2Server {
         if ($datetime === false) {
             $datetime = DateTime::createFromFormat('Y-m-d', $date);
         }
-        return ($datetime !== false) && !array_sum($dt->getLastErrors());
+        return ($datetime !== false) && !array_sum($datetime->getLastErrors());
     }
 
 }
