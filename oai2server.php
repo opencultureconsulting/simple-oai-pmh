@@ -38,12 +38,12 @@ class OAI2Server {
     private $token_valid = 86400;
 
     public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
+        $this->uri = $uri;
         $verbs = array('Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord');
         if (empty($args['verb']) || !in_array($args['verb'], $verbs)) {
             $this->errors[] = new OAI2Exception('badVerb');
             return;
         }
-        $this->uri = $uri;
         $this->verb = $args['verb'];
         unset($args['verb']);
         $this->args = $args;
