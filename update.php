@@ -22,6 +22,35 @@ if (php_sapi_name() !== 'cli') exit;
 
 require_once('oai2config.php');
 
+/**
+ * Format output string
+ *
+ * @param string $text
+ * @param string $format 'green' or 'red'
+ *
+ * @return string
+ */
+function format($text, $format = '') {
+
+    switch ($format) {
+
+        case 'green':
+            $text = "\033[0;92m$text\033[0m";
+            break;
+
+        case 'red':
+            $text = "\033[1;91m$text\033[0m";
+            break;
+
+        default:
+            break;
+
+    }
+
+    return $text;
+
+}
+
 // Check mandatory cli arguments
 if (empty($argc) || $argc != 3) {
 
@@ -48,8 +77,6 @@ if (empty($config['metadataFormats'][$metadataPrefix])) {
 }
 
 // Check sourceDir permissions
-$sourceDir = rtrim($sourceDir, '/').'/';
-
 if (!is_dir($sourceDir) || !is_readable($sourceDir)) {
 
     echo "Error: $sourceDir not readable\n";
@@ -57,6 +84,8 @@ if (!is_dir($sourceDir) || !is_readable($sourceDir)) {
     exit;
 
 }
+
+$sourceDir = rtrim($sourceDir, '/').'/';
 
 // Check dataDir permissions
 $dataDir = rtrim($config['dataDirectory'], '/').'/'.$metadataPrefix.'/';
@@ -73,6 +102,8 @@ if (!is_dir($dataDir) || !is_writable($dataDir)) {
 echo "Updating $dataDir from $sourceDir\n";
 
 $todo = array ();
+
+$error = false;
 
 $oldFiles = glob($dataDir.'*.xml');
 
@@ -92,22 +123,28 @@ foreach ($newFiles as $newFile) {
 
 foreach ($todo as $identifier => $task) {
 
+    echo "  Checking record $identifier ... ";
+
     if ($task === 'update') {
 
         if (md5_file($sourceDir.$identifier.'.xml') !== md5_file($dataDir.$identifier.'.xml')) {
 
-            echo "  Updating record $identifier ...";
-
             // Replace file
             if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
 
-                echo " done!\n";
+                echo format('updated', 'green')."\n";
 
             } else {
 
-                echo " failed!\n";
+                echo format('update failed', 'red')."\n";
+
+                $error = true;
 
             }
+
+        } else {
+
+            echo "unchanged\n";
 
         }
 
@@ -115,21 +152,35 @@ foreach ($todo as $identifier => $task) {
 
         if (filesize($dataDir.$identifier.'.xml') !== 0) {
 
-            echo "  Deleting record $identifier ...";
-
             // Truncate file
             if (fclose(fopen($dataDir.$identifier.'.xml', 'w'))) {
 
-                echo " done!\n";
+                echo format('deleted', 'green')."\n";
 
             } else {
 
-                echo " failed!\n";
+                echo format('deletion failed', 'red')."\n";
+
+                $error = true;
 
             }
+
+        } else {
+
+            echo "unchanged\n";
 
         }
 
     }
+
+}
+
+if ($error) {
+
+    echo "Update completed, but errors occurred. Please check the logs!\n";
+
+} else {
+
+    echo "Update successfully completed!\n";
 
 }
