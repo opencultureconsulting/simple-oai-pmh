@@ -127,7 +127,22 @@ foreach ($todo as $identifier => $task) {
 
     if ($task === 'update') {
 
-        if (md5_file($sourceDir.$identifier.'.xml') !== md5_file($dataDir.$identifier.'.xml')) {
+        if (!file_exists($dataDir.$identifier.'.xml')) {
+
+            // Add file
+            if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
+
+                echo format('added', 'green')."\n";
+
+            } else {
+
+                echo format('addition failed', 'red')."\n";
+
+                $error = true;
+
+            }
+
+        } elseif (md5_file($sourceDir.$identifier.'.xml') !== md5_file($dataDir.$identifier.'.xml')) {
 
             // Replace file
             if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
