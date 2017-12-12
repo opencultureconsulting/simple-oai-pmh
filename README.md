@@ -20,6 +20,8 @@ Installation
 
 4. Congratulations! Now you are running an OAI-PMH 2.0 compatible data provider.
 
+5. Updating your records from the command line is just as easy with the update.php script!
+
 History
 -------
 
