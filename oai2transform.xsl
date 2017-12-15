@@ -385,7 +385,7 @@ Resumption Token
     <li>&#187; <a class="link" href="?verb={$verb}&amp;resumptionToken={.}">Resume</a></li>
   </ul>
   <table class="values">
-    <tr><td class="key">Submitted Records</td>
+    <tr><td class="key">Cursor Position</td>
     <td class="value"><xsl:value-of select="@cursor"/></td></tr>
     <tr><td class="key">Total Records</td>
     <td class="value"><xsl:value-of select="@completeListSize"/></td></tr>
