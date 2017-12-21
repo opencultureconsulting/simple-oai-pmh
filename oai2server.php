@@ -218,7 +218,7 @@ class OAI2Server {
                 // Will we need a new ResumptionToken?
                 if ($records_count - $deliveredRecords > $maxItems) {
                     $deliveredRecords +=  $maxItems;
-                    $restoken = $this->createResumptionToken($deliveredRecords);
+                    $restoken = $this->createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until);
                     $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);
                 } elseif (isset($this->args['resumptionToken'])) {
                     // Last delivery, return empty ResumptionToken
@@ -241,23 +241,17 @@ class OAI2Server {
         $this->response->importFragment($meta_node, $fragment);
     }
 
-    private function createResumptionToken($delivered_records) {
+    private function createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until) {
         list($usec, $sec) = explode(' ', microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000));
-        $file = fopen ($this->token_prefix.$token, 'w');
+        $file = fopen($this->token_prefix.$token, 'w');
         if($file == false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
-        $values = array(
-            'deliveredRecords' => $delivered_records,
-            'metadataPrefix' => isset($this->args['metadataPrefix']) ? $this->args['metadataPrefix'] : '',
-            'from' => isset($this->args['from']) ? $this->args['from'] : '',
-            'until' => isset($this->args['until']) ? $this->args['until'] : ''
-        );
-        fputs($file, $values['deliveredRecords'].'#');
-        fputs($file, $values['metadataPrefix'].'#');
-        fputs($file, $values['from'].'#');
-        fputs($file, $values['until'].'#');
+        fputs($file, $deliveredRecords.'#');
+        fputs($file, $metadataPrefix.'#');
+        fputs($file, $from.'#');
+        fputs($file, $until);
         fclose($file);
         return $token;
     }
