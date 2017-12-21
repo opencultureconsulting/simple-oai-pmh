@@ -59,7 +59,6 @@ if (empty($argc) || $argc != 3) {
     echo "\n";
     echo "Example:\n";
     echo "  php update.php /tmp/import oai_dc\n";
-    echo "\n";
 
     exit;
 
@@ -87,9 +86,16 @@ if (!is_dir($sourceDir) || !is_readable($sourceDir)) {
 
 $sourceDir = rtrim($sourceDir, '/').'/';
 
-// Check dataDir permissions
+// Prepend script's path if dataDir is not an absolute path
 $dataDir = rtrim($config['dataDirectory'], '/').'/'.$metadataPrefix.'/';
 
+if (strpos($dataDir, '/') !== 0) {
+
+    $dataDir = dirname(__FILE__).'/'.$dataDir;
+
+}
+
+// Check dataDir permissions
 if (!is_dir($dataDir) || !is_writable($dataDir)) {
 
     echo "Error: $dataDir not writable\n";
