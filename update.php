@@ -59,6 +59,7 @@ if (empty($argc) || $argc != 3) {
     echo "\n";
     echo "Example:\n";
     echo "  php update.php /tmp/import oai_dc\n";
+    echo "\n";
 
     exit;
 
