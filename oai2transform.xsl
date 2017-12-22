@@ -137,8 +137,13 @@
   </xsl:template>
 
   <xsl:variable name='verb' select="/oai:OAI-PMH/oai:request/@verb"/>
-  <xsl:variable name='metadataPrefix' select="/oai:OAI-PMH/oai:request/@metadataPrefix"/>
   <xsl:variable name='identifier' select="/oai:OAI-PMH/oai:request/@identifier"/>
+  <xsl:if test="/oai:OAI-PMH/oai:request/@metadataPrefix">
+    <xsl:variable name='metadataPrefix' select="/oai:OAI-PMH/oai:request/@metadataPrefix"/>
+  </xsl:if>
+  <xsl:if test="/oai:OAI-PMH/oai:request/@resumptionToken">
+    <xsl:variable name='metadataPrefix' select="substring-after(/oai:OAI-PMH/oai:request/@resumptionToken,'#')"/>
+  </xsl:if>
   <xsl:variable name='from' select="/oai:OAI-PMH/oai:request/@from"/>
   <xsl:variable name='until' select="/oai:OAI-PMH/oai:request/@until"/>
 
@@ -296,7 +301,12 @@ Metadata Format Details
 ListIdentifiers
 -->
 <xsl:template match="oai:ListIdentifiers">
-  <p class="info">This is a list of records' identifiers available for the metadata format <em><xsl:value-of select="$metadataPrefix"/></em>.</p>
+  <xsl:when test="$metadataPrefix">
+    <p class="info">This is a list of records' identifiers available for the metadata format <em><xsl:value-of select="$metadataPrefix"/></em>.</p>
+  </xsl:when>
+  <xsl:otherwise>
+    <p class="info">This is a resumed list of records' identifiers available for the requested metadata format.</p>
+  </xsl:otherwise>
   <ol>
     <xsl:apply-templates select="oai:header" />
   </ol>
@@ -308,7 +318,7 @@ ListIdentifiers
     <h3>Record Header <em><xsl:value-of select="oai:identifier"/></em></h3>
     <ul>
       <li>&#187; <a class="link" href="?verb=ListMetadataFormats&amp;identifier={oai:identifier}">ListMetadataFormats</a></li>
-      <li>&#187; <a class="link" href="?verb=GetRecord&amp;metadataPrefix={$metadataPrefix}&amp;identifier={oai:identifier}">GetRecord</a></li>
+      <xsl:if test="$metadataPrefix"><li>&#187; <a class="link" href="?verb=GetRecord&amp;metadataPrefix={$metadataPrefix}&amp;identifier={oai:identifier}">GetRecord</a></li></xsl:if>
     </ul>
     <table class="values">
       <tr><td class="key">Identifier</td>
@@ -330,7 +340,12 @@ ListIdentifiers
 ListRecords
 -->
 <xsl:template match="oai:ListRecords">
-  <p class="info">This is a list of records available for the metadata format <em><xsl:value-of select="$metadataPrefix"/></em>.</p>
+  <xsl:when test="$metadataPrefix">
+    <p class="info">This is a list of records available for the metadata format <em><xsl:value-of select="$metadataPrefix"/></em>.</p>
+  </xsl:when>
+  <xsl:otherwise>
+    <p class="info">This is a resumed list of records available for the requested metadata format.</p>
+  </xsl:otherwise>
   <ol>
     <xsl:apply-templates select="oai:record" />
   </ol>
@@ -361,7 +376,7 @@ Record Details
   <h3>Record <em><xsl:value-of select="oai:identifier"/></em></h3>
   <ul>
     <li>&#187; <a class="link" href="?verb=ListMetadataFormats&amp;identifier={oai:identifier}">ListMetadataFormats</a></li>
-    <xsl:if test="$verb != 'GetRecord'"><li>&#187; <a class="link" href="?verb=GetRecord&amp;metadataPrefix={$metadataPrefix}&amp;identifier={oai:identifier}">GetRecord</a></li></xsl:if>
+    <xsl:if test="$verb != 'GetRecord'"><xsl:if test="$metadataPrefix"><li>&#187; <a class="link" href="?verb=GetRecord&amp;metadataPrefix={$metadataPrefix}&amp;identifier={oai:identifier}">GetRecord</a></li></xsl:if></xsl:if>
   </ul>
   <table class="values">
     <tr><td class="key">Identifier</td>
@@ -400,7 +415,7 @@ Resumption Token
 Unknown Metadata
 -->
 <xsl:template match="oai:metadata/*" priority='-100'>
-  <h4>Metadata Format <em><xsl:value-of select="$metadataPrefix"/></em></h4>
+  <h4>Metadata <xsl:if test="$metadataPrefix"><em>(<xsl:value-of select="$metadataPrefix"/>)</em></xsl:if></h4>
   <div class="xmlSource">
     <xsl:apply-templates select="." mode='xmlMarkup' />
   </div>
@@ -410,7 +425,7 @@ Unknown Metadata
 DublinCore Metadata
 -->
 <xsl:template match="oai_dc:dc" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
-  <h4>Metadata Format <em>DublinCore</em></h4>
+  <h4>Metadata <em>(DublinCore)</em></h4>
   <table>
     <xsl:apply-templates select="*" />
   </table>
