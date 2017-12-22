@@ -244,8 +244,8 @@ class OAI2Server {
 
     private function createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until) {
         list($usec, $sec) = explode(' ', microtime());
-        $token = ((int)($usec*1000) + (int)($sec*1000));
-        $file = fopen($this->token_prefix.$token.'#'.$metadataPrefix, 'w');
+        $token = ((int)($usec*1000) + (int)($sec*1000)).'#'.$metadataPrefix;
+        $file = fopen($this->token_prefix.$token, 'w');
         if($file == false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
