@@ -156,7 +156,7 @@ class OAI2Server {
     public function ListRecords() {
         $maxItems = $this->max_records;
         $deliveredRecords = 0;
-        $metadataPrefix = $this->args['metadataPrefix'];
+        $metadataPrefix = isset($this->args['metadataPrefix']) ? $this->args['metadataPrefix'] : '';
         $from = isset($this->args['from']) ? $this->args['from'] : '';
         $until = isset($this->args['until']) ? $this->args['until'] : '';
         if (isset($this->args['resumptionToken'])) {
@@ -207,6 +207,7 @@ class OAI2Server {
                 }
                 $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
+                    $cur_record = null;
                     if ($this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
                         $cur_record = $this->response->addToVerbNode('record');
                     }
