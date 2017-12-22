@@ -137,7 +137,6 @@
   </xsl:template>
 
   <xsl:variable name='verb' select="/oai:OAI-PMH/oai:request/@verb"/>
-  <xsl:variable name='identifier' select="/oai:OAI-PMH/oai:request/@identifier"/>
   <xsl:variable name='metadataPrefix'>
     <xsl:choose>
       <xsl:when test="/oai:OAI-PMH/oai:request/@metadataPrefix != ''">
@@ -148,8 +147,10 @@
       </xsl:when>
     </xsl:choose>
   </xsl:variable>
+  <xsl:variable name='identifier' select="/oai:OAI-PMH/oai:request/@identifier"/>
   <xsl:variable name='from' select="/oai:OAI-PMH/oai:request/@from"/>
   <xsl:variable name='until' select="/oai:OAI-PMH/oai:request/@until"/>
+  <xsl:variable name='resumptionToken' select="/oai:OAI-PMH/oai:request/@resumptionToken"/>
 
   <xsl:template match="/">
     <html>
@@ -195,11 +196,12 @@
       <td class="value"><xsl:value-of select="oai:request"/></td></tr>
       <tr><td class="key">Request Parameters</td>
       <td class="value">
-        <xsl:if test="$verb">verb = <em><xsl:value-of select="$verb"/></em><br/></xsl:if>
-        <xsl:if test="$metadataPrefix != ''">metadataPrefix = <em><xsl:value-of select="$metadataPrefix"/></em><br/></xsl:if>
-        <xsl:if test="$identifier">identifier = <em><xsl:value-of select="$identifier"/></em><br/></xsl:if>
-        <xsl:if test="$from">from = <em><xsl:value-of select="$from"/></em><br/></xsl:if>
-        <xsl:if test="$until">until = <em><xsl:value-of select="$until"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@verb">verb = <em><xsl:value-of select="$verb"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@metadataPrefix">metadataPrefix = <em><xsl:value-of select="$metadataPrefix"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@identifier">identifier = <em><xsl:value-of select="$identifier"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@from">from = <em><xsl:value-of select="$from"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@until">until = <em><xsl:value-of select="$until"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@resumptionToken">resumptionToken = <em><xsl:value-of select="$resumptionToken"/></em><br/></xsl:if>
       </td></tr>
     </table>
     <xsl:choose>
