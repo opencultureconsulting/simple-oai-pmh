@@ -142,7 +142,7 @@
     <xsl:variable name='metadataPrefix' select="/oai:OAI-PMH/oai:request/@metadataPrefix"/>
   </xsl:if>
   <xsl:if test="/oai:OAI-PMH/oai:request/@resumptionToken">
-    <xsl:variable name='metadataPrefix' select="substring-after(/oai:OAI-PMH/oai:request/@resumptionToken,'#')"/>
+    <xsl:variable name='metadataPrefix' select="substring-after(/oai:OAI-PMH/oai:request/@resumptionToken,'_')"/>
   </xsl:if>
   <xsl:variable name='from' select="/oai:OAI-PMH/oai:request/@from"/>
   <xsl:variable name='until' select="/oai:OAI-PMH/oai:request/@until"/>
