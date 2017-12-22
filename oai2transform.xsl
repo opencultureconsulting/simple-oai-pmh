@@ -184,6 +184,9 @@
             <li>&#187; <a class="link" href="?verb=GetRecord&amp;metadataPrefix={$metadataPrefix}&amp;identifier={$identifier}">GetRecord (<em><xsl:value-of select="$identifier"/></em> in <em><xsl:value-of select="$metadataPrefix"/></em>)</a></li>
           </xsl:if>
         </xsl:if>
+        <xsl:if test="//oai:resumptionToken">
+          <li>&#187; <a class="link" href="?verb={$verb}&amp;resumptionToken={//oai:resumptionToken}">Resume</a></li>
+        </xsl:if>
       </ul>
     </div>
   </xsl:template>
