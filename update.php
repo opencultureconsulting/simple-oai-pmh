@@ -20,7 +20,7 @@
 // Make this script only executable via commandline interface!
 if (php_sapi_name() !== 'cli') exit;
 
-require_once('oai2config.php');
+require_once('config.php');
 
 /**
  * Format output string

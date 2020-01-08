@@ -20,7 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('oai2config.php');
+require_once('config.php');
 require_once('oai2server.php');
 
 // Get all available records and their respective status and timestamps
