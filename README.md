@@ -18,11 +18,21 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 4. Put the records into the respective directories according to their format. Each record has to be a separate XML file with its `identifier` as filename (e. g. 12345678.xml). Optionally you can maintain deletions by keeping 0-byte files for deleted records.
 
-5. Congratulations! Now you are running an OAI-PMH 2.0 compatible data provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
+5. Congratulations! Now you are running your own Simple OAI-PMH 2.0 Data Provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
+
+## Upgrading
+
+1. Backup all data (especially `Configuration/Main.php`)!
+
+2. Replace all files except your data directory with the new release.
+
+3. Move your configuration back into `Configuration/Main.php`.
+
+4. Congratulations! Now you are running a new version of the Simple OAI-PMH 2.0 Data Provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
 
 ## Updating
 
-Updating your records from the command line is just as easy with the `update.php` script! The script automatically handles deletions by maintaining 0-byte files for deleted records. Just call `php update.php` and follow the instructions.
+Updating your records is just as easy with the `update.php` script! The script automatically handles deletions by maintaining 0-byte files for deleted records. Just call `php update.php` from the command line and follow the instructions. (Of course, you can simply replace the records manually as well.)
 
 ## History
 
