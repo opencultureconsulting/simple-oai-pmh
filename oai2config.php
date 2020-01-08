@@ -49,7 +49,7 @@ $config['deletedRecord'] = 'transient';
 //  but technically you can deliver any XML based data format you want. Just add
 //  another entry with the 'metadataPrefix' as key and schema/namespace URIs as
 //  array values or replace the default 'oai_dc' entry (not recommended).
-$config['metadataFormats'] = array(
+$config['metadataPrefix'] = array(
   'oai_dc' => array(
     'schema' => 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
     'namespace' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',

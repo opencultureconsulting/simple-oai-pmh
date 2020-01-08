@@ -56,7 +56,7 @@ if (empty($argc) || $argc != 3) {
 }
 list(, $sourceDir, $metadataPrefix) = $argv;
 // Check metadataPrefix
-if (empty($config['metadataFormats'][$metadataPrefix])) {
+if (empty($config['metadataPrefix'][$metadataPrefix])) {
     echo "Error: metadataPrefix $metadataPrefix not defined in oai2config.php\n";
     exit;
 }

@@ -29,7 +29,7 @@ $deleted = array();
 $timestamps = array();
 $earliest = time();
 
-foreach($config['metadataFormats'] as $prefix => $uris) {
+foreach($config['metadataPrefix'] as $prefix => $uris) {
   $files = glob(rtrim($config['dataDirectory'], '/').'/'.$prefix.'/*.xml');
   foreach($files as $file) {
     $records[$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
@@ -112,7 +112,7 @@ $oai2 = new OAI2Server(
         $formats = array();
         foreach($records as $format => $record) {
           if (!empty($record[$identifier])) {
-            $formats[$format] = $config['metadataFormats'][$format];
+            $formats[$format] = $config['metadataPrefix'][$format];
           }
         }
         if (!empty($formats)) {
@@ -121,7 +121,7 @@ $oai2 = new OAI2Server(
           throw new OAI2Exception('idDoesNotExist');
         }
       } else {
-        return $config['metadataFormats'];
+        return $config['metadataPrefix'];
       }
     }
   ),
