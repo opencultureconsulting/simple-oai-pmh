@@ -20,8 +20,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('oai2exception.php');
-require_once('oai2xml.php');
+require_once './OAI2Exception.php';
+require_once './OAI2Response.php';
 
 /**
  * This is an implementation of OAI Data Provider version 2.0.
@@ -29,17 +29,16 @@ require_once('oai2xml.php');
  */
 class OAI2Server {
 
-    public $errors = array();
-    private $args = array();
+    public $errors = [];
+    private $args = [];
     private $verb = '';
-    private $deleted_record = 'transient';
     private $max_records = 100;
     private $token_prefix = '/tmp/oai2-';
     private $token_valid = 86400;
 
     public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
         $this->uri = $uri;
-        $verbs = array('Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord');
+        $verbs = ['Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord'];
         if (empty($args['verb']) || !in_array($args['verb'], $verbs)) {
             $this->errors[] = new OAI2Exception('badVerb');
             return;
@@ -51,19 +50,18 @@ class OAI2Server {
         $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
         $this->listRecordsCallback = $callbacks['ListRecords'];
         $this->getRecordCallback = $callbacks['GetRecord'];
-        $this->deleted_record = $config['deletedRecord'];
         $this->max_records = $config['maxRecords'];
         $this->token_prefix = $config['tokenPrefix'];
         $this->token_valid = $config['tokenValid'];
-        $this->response = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
-        call_user_func(array($this, $this->verb));
+        $this->response = new OAI2Response($this->uri, $this->verb, $this->args);
+        call_user_func([$this, $this->verb]);
     }
 
     public function response() {
         if (empty($this->errors)) {
             return $this->response->doc;
         }
-        $errorResponse = new OAI2XMLResponse($this->uri, $this->verb, $this->args);
+        $errorResponse = new OAI2Response($this->uri, $this->verb, $this->args);
         $oai_node = $errorResponse->doc->documentElement;
         foreach($this->errors as $e) {
             $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
@@ -222,7 +220,7 @@ class OAI2Server {
                     $restoken = $this->createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until);
                     $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);
                 } elseif (isset($this->args['resumptionToken'])) {
-                    // Last delivery, return empty ResumptionToken
+                    // Last delivery, return empty resumptionToken
                     $restoken = null;
                     $expirationDatetime = null;
                 }

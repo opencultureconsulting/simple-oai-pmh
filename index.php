@@ -20,121 +20,118 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('config.php');
-require_once('oai2server.php');
+require_once './Configuration/Main.php';
+require_once './Classes/OAI2Server.php';
 
 // Get all available records and their respective status and timestamps
-$records = array();
-$deleted = array();
-$timestamps = array();
+$records = [];
+$deleted = [];
+$timestamps = [];
 $earliest = time();
 
-foreach($config['metadataPrefix'] as $prefix => $uris) {
-  $files = glob(rtrim($config['dataDirectory'], '/').'/'.$prefix.'/*.xml');
-  foreach($files as $file) {
-    $records[$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
-    $deleted[$prefix][pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
-    $timestamps[$prefix][filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
-    if (filemtime($file) < $earliest) {
-      $earliest = filemtime($file);
+foreach ($config['metadataPrefix'] as $prefix => $uris) {
+    $files = glob(rtrim($config['dataDirectory'], '/').'/'.$prefix.'/*.xml');
+    foreach ($files as $file) {
+        $records[$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
+        $deleted[$prefix][pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
+        $timestamps[$prefix][filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
+        if (filemtime($file) < $earliest) {
+            $earliest = filemtime($file);
+        }
     }
-  }
-  ksort($records[$prefix]);
-  reset($records[$prefix]);
-  ksort($timestamps[$prefix]);
-  reset($timestamps[$prefix]);
+    ksort($records[$prefix]);
+    reset($records[$prefix]);
+    ksort($timestamps[$prefix]);
+    reset($timestamps[$prefix]);
 }
 
 // Get current base URL
 $baseURL = $_SERVER['HTTP_HOST'].parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-  $baseURL = 'https://'.$baseURL;
+    $baseURL = 'https://'.$baseURL;
 } else {
-  $baseURL = 'http://'.$baseURL;
+    $baseURL = 'http://'.$baseURL;
 }
 
 // Build the Identify response
-$identifyResponse = array(
-  'repositoryName' => $config['repositoryName'],
-  'baseURL' => $baseURL,
-  'protocolVersion' => '2.0',
-  'adminEmail' => $config['adminEmail'],
-  'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $earliest),
-  'deletedRecord' => $config['deletedRecord'],
-  'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
-);
+$identifyResponse = [
+    'repositoryName' => $config['repositoryName'],
+    'baseURL' => $baseURL,
+    'protocolVersion' => '2.0',
+    'adminEmail' => $config['adminEmail'],
+    'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $earliest),
+    'deletedRecord' => $config['deletedRecord'],
+    'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
+];
 
 $oai2 = new OAI2Server(
-  $baseURL,
-  $_GET,
-  $identifyResponse,
-  array(
-    'GetRecord' =>
-    function($identifier, $metadataPrefix) {
-      global $records, $deleted;
-      if (empty($records[$metadataPrefix][$identifier])) {
-        return array();
-      } else {
-        return array(
-          'identifier' => $identifier,
-          'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-          'deleted' => $deleted[$metadataPrefix][$identifier],
-          'metadata' => $records[$metadataPrefix][$identifier]
-        );
-      }
-    },
-    'ListRecords' =>
-    function($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
-      global $records, $deleted, $timestamps;
-      $resultSet = array();
-      foreach($timestamps[$metadataPrefix] as $timestamp => $identifiers) {
-        if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
-          foreach($identifiers as $identifier) {
-            $resultSet[] = array(
-              'identifier' => $identifier,
-              'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-              'deleted' => $deleted[$metadataPrefix][$identifier],
-              'metadata' => $records[$metadataPrefix][$identifier]
-            );
-          }
+    $baseURL,
+    $_GET,
+    $identifyResponse,
+    [
+        'GetRecord' => function ($identifier, $metadataPrefix) {
+            global $records, $deleted;
+            if (empty($records[$metadataPrefix][$identifier])) {
+                return [];
+            } else {
+                return [
+                    'identifier' => $identifier,
+                    'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                    'deleted' => $deleted[$metadataPrefix][$identifier],
+                    'metadata' => $records[$metadataPrefix][$identifier]
+                ];
+            }
+        },
+        'ListRecords' => function ($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
+            global $records, $deleted, $timestamps;
+            $resultSet = [];
+            foreach ($timestamps[$metadataPrefix] as $timestamp => $identifiers) {
+                if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
+                    foreach ($identifiers as $identifier) {
+                        $resultSet[] = [
+                            'identifier' => $identifier,
+                            'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                            'deleted' => $deleted[$metadataPrefix][$identifier],
+                            'metadata' => $records[$metadataPrefix][$identifier]
+                        ];
+                    }
+                }
+            }
+            if ($count) {
+                return count($resultSet);
+            } else {
+                return array_slice($resultSet, $deliveredRecords, $maxItems);
+            }
+        },
+        'ListMetadataFormats' => function ($identifier = '') {
+            global $config, $records;
+            if (!empty($identifier)) {
+                $formats = [];
+                foreach ($records as $format => $record) {
+                    if (!empty($record[$identifier])) {
+                        $formats[$format] = $config['metadataPrefix'][$format];
+                    }
+                }
+                if (!empty($formats)) {
+                    return $formats;
+                } else {
+                    throw new OAI2Exception('idDoesNotExist');
+                }
+            } else {
+                return $config['metadataPrefix'];
+            }
         }
-      }
-      if ($count) {
-        return count($resultSet);
-      } else {
-        return array_slice($resultSet, $deliveredRecords, $maxItems);
-      }
-    },
-    'ListMetadataFormats' =>
-    function($identifier = '') {
-      global $config, $records;
-      if (!empty($identifier)) {
-        $formats = array();
-        foreach($records as $format => $record) {
-          if (!empty($record[$identifier])) {
-            $formats[$format] = $config['metadataPrefix'][$format];
-          }
-        }
-        if (!empty($formats)) {
-          return $formats;
-        } else {
-          throw new OAI2Exception('idDoesNotExist');
-        }
-      } else {
-        return $config['metadataPrefix'];
-      }
-    }
-  ),
-  $config
+    ],
+    $config
 );
 
 $response = $oai2->response();
 
 if (isset($return)) {
-  return $response;
+    return $response;
 } else {
-  $response->formatOutput = true;
-  $response->preserveWhiteSpace = false;
-  header('Content-Type: text/xml');
-  echo $response->saveXML();
+    $response->formatOutput = true;
+    $response->preserveWhiteSpace = false;
+    header('Content-Type: text/xml');
+    echo $response->saveXML();
 }

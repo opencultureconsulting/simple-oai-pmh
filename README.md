@@ -12,7 +12,7 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 1. Deploy all the files to a webserver.
 
-2. Edit `config.php` and adjust the settings according to your preferences.
+2. Edit `Configuration/Main.php` and adjust the settings according to your preferences.
 
 3. Create a subdirectory inside the specified data directory for every format (i. e. `metadataPrefix`) you want to provide.
 

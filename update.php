@@ -20,7 +20,7 @@
 // Make this script only executable via commandline interface!
 if (php_sapi_name() !== 'cli') exit;
 
-require_once('config.php');
+require_once './Configuration/Main.php';
 
 /**
  * Format output string
