@@ -18,7 +18,9 @@
  */
 
 // Make this script only executable via commandline interface!
-if (php_sapi_name() !== 'cli') exit;
+if (php_sapi_name() !== 'cli') {
+    exit;
+}
 
 require_once './Configuration/Main.php';
 

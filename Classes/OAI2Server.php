@@ -63,7 +63,7 @@ class OAI2Server {
         }
         $errorResponse = new OAI2Response($this->uri, $this->verb, $this->args);
         $oai_node = $errorResponse->doc->documentElement;
-        foreach($this->errors as $e) {
+        foreach ($this->errors as $e) {
             $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
             $node->setAttribute('code', $e->getOAI2Code());
         }
@@ -72,11 +72,11 @@ class OAI2Server {
 
     public function Identify() {
         if (count($this->args) > 0) {
-            foreach($this->args as $key => $val) {
+            foreach ($this->args as $key => $val) {
                 $this->errors[] = new OAI2Exception('badArgument');
             }
         } else {
-            foreach($this->identifyResponse as $key => $val) {
+            foreach ($this->identifyResponse as $key => $val) {
                 $this->response->addToVerbNode($key, $val);
             }
         }
@@ -94,7 +94,7 @@ class OAI2Server {
         if (empty($this->errors)) {
             try {
                 if ($formats = call_user_func($this->listMetadataFormatsCallback, $identifier)) {
-                    foreach($formats as $key => $val) {
+                    foreach ($formats as $key => $val) {
                         $cmf = $this->response->addToVerbNode('metadataFormat');
                         $this->response->addChild($cmf, 'metadataPrefix', $key);
                         $this->response->addChild($cmf, 'schema', $val['schema']);
@@ -195,7 +195,7 @@ class OAI2Server {
                 }
             }
             if (isset($this->args['set'])) {
-               $this->errors[] = new OAI2Exception('noSetHierarchy');
+                $this->errors[] = new OAI2Exception('noSetHierarchy');
             }
         }
         if (empty($this->errors)) {
@@ -244,7 +244,7 @@ class OAI2Server {
         list($usec, $sec) = explode(' ', microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000)).'_'.$metadataPrefix;
         $file = fopen($this->token_prefix.$token, 'w');
-        if($file == false) {
+        if ($file == false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
         fputs($file, $deliveredRecords.'#');

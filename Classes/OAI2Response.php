@@ -44,7 +44,7 @@ class OAI2Response {
         if (!empty($this->verb)) {
             $request->setAttribute('verb', $this->verb);
         }
-        foreach($request_args as $key => $value) {
+        foreach ($request_args as $key => $value) {
             $request->setAttribute($key, $value);
         }
     }
@@ -91,14 +91,14 @@ class OAI2Response {
      * Otherwise it will be attached to the desired node defined in $add_to_node.
      */
     public function createHeader($identifier, $timestamp, $deleted = false, $add_to_node = null) {
-        if(is_null($add_to_node)) {
+        if (is_null($add_to_node)) {
             $header_node = $this->addToVerbNode('header');
         } else {
             $header_node = $this->addChild($add_to_node, 'header');
         }
         $this->addChild($header_node, 'identifier', $identifier);
         $this->addChild($header_node, 'datestamp', $timestamp);
-        if($deleted) {
+        if ($deleted) {
             $header_node->setAttribute('status', 'deleted');
         }
         return $header_node;
@@ -114,7 +114,7 @@ class OAI2Response {
      */
     public function createResumptionToken($token, $expirationdatetime, $num_rows, $cursor = null) {
         $resump_node = $this->addChild($this->verbNode, 'resumptionToken', $token);
-        if(isset($expirationdatetime)) {
+        if (isset($expirationdatetime)) {
             $resump_node->setAttribute('expirationDate', $expirationdatetime);
         }
         $resump_node->setAttribute('completeListSize', $num_rows);
