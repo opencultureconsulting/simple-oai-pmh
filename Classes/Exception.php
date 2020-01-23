@@ -20,7 +20,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class OAI2Exception extends Exception {
+namespace OCC\OAI2;
+
+class Exception extends \Exception {
 
     public function __construct($code) {
         $this->errorTable = [

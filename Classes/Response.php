@@ -20,7 +20,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class OAI2Response {
+namespace OCC\OAI2;
+
+class Response {
 
     public $doc; // DOMDocument. Handle of current XML Document object
 
@@ -32,7 +34,7 @@ class OAI2Response {
             $stylesheet .= $_SERVER['HTTP_HOST'].pathinfo(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), PATHINFO_DIRNAME).'/Resources/Stylesheet.xsl';
         }
         $this->verb = $verb;
-        $this->doc = new DOMDocument('1.0', 'UTF-8');
+        $this->doc = new \DOMDocument('1.0', 'UTF-8');
         $this->doc->appendChild($this->doc->createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="'.$stylesheet.'"'));
         $oai_node = $this->doc->createElement('OAI-PMH');
         $oai_node->setAttribute('xmlns', 'http://www.openarchives.org/OAI/2.0/');
@@ -52,11 +54,11 @@ class OAI2Response {
     /**
      * Add a child node to a parent node on a XML Doc: a worker function.
      *
-     * @param DOMNode $mom_node The target node.
+     * @param \DOMNode $mom_node The target node.
      * @param string  $name     The name of child node is being added.
      * @param string  $value    Text for the adding node if it is a text node.
      *
-     * @return DOMElement $added_node * The newly created node
+     * @return \DOMElement $added_node * The newly created node
      */
     public function addChild($mom_node, $name, $value = '') {
         $added_node = $this->doc->createElement($name, $value);
@@ -85,7 +87,7 @@ class OAI2Response {
      * @param string     $identifier  The identifier string for node <identifier>.
      * @param string     $timestamp   Timestamp in UTC format for node <datastamp>.
      * @param boolean    $deleted     Deleted status for the record.
-     * @param DOMElement $add_to_node Default value is null.
+     * @param \DOMElement $add_to_node Default value is null.
      * In normal cases, $add_to_node is the <record> node created previously.
      * When it is null, the newly created header node is attatched to $this->verbNode.
      * Otherwise it will be attached to the desired node defined in $add_to_node.
@@ -124,10 +126,10 @@ class OAI2Response {
     /**
      * Imports a XML fragment into a parent node on a XML Doc: a worker function.
      *
-     * @param DOMNode     $mom_node The target node.
-     * @param DOMDocument $fragment The XML fragment is being added.
+     * @param \DOMNode     $mom_node The target node.
+     * @param \DOMDocument $fragment The XML fragment is being added.
      *
-     * @return DOMElement $added_node * The newly created node
+     * @return \DOMElement $added_node * The newly created node
      */
     public function importFragment($mom_node, $fragment) {
         $added_node = $mom_node->appendChild($this->doc->importNode($fragment->documentElement, true));

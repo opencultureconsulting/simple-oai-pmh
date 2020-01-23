@@ -20,14 +20,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once './OAI2Exception.php';
-require_once './OAI2Response.php';
+namespace OCC\OAI2;
 
 /**
  * This is an implementation of OAI Data Provider version 2.0.
  * @see http://www.openarchives.org/OAI/2.0/openarchivesprotocol.htm
  */
-class OAI2Server {
+class Server {
 
     public $errors = [];
     private $args = [];
@@ -40,7 +39,7 @@ class OAI2Server {
         $this->uri = $uri;
         $verbs = ['Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord'];
         if (empty($args['verb']) || !in_array($args['verb'], $verbs)) {
-            $this->errors[] = new OAI2Exception('badVerb');
+            $this->errors[] = new Exception('badVerb');
             return;
         }
         $this->verb = $args['verb'];
@@ -53,7 +52,7 @@ class OAI2Server {
         $this->max_records = $config['maxRecords'];
         $this->token_prefix = $config['tokenPrefix'];
         $this->token_valid = $config['tokenValid'];
-        $this->response = new OAI2Response($this->uri, $this->verb, $this->args);
+        $this->response = new Response($this->uri, $this->verb, $this->args);
         call_user_func([$this, $this->verb]);
     }
 
@@ -61,7 +60,7 @@ class OAI2Server {
         if (empty($this->errors)) {
             return $this->response->doc;
         }
-        $errorResponse = new OAI2Response($this->uri, $this->verb, $this->args);
+        $errorResponse = new Response($this->uri, $this->verb, $this->args);
         $oai_node = $errorResponse->doc->documentElement;
         foreach ($this->errors as $e) {
             $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
@@ -73,7 +72,7 @@ class OAI2Server {
     public function Identify() {
         if (count($this->args) > 0) {
             foreach ($this->args as $key => $val) {
-                $this->errors[] = new OAI2Exception('badArgument');
+                $this->errors[] = new Exception('badArgument');
             }
         } else {
             foreach ($this->identifyResponse as $key => $val) {
@@ -86,7 +85,7 @@ class OAI2Server {
         $identifier = '';
         foreach ($this->args as $argument => $value) {
             if ($argument != 'identifier') {
-                $this->errors[] = new OAI2Exception('badArgument');
+                $this->errors[] = new Exception('badArgument');
             } else {
                 $identifier = $value;
             }
@@ -101,9 +100,9 @@ class OAI2Server {
                         $this->response->addChild($cmf, 'metadataNamespace', $val['namespace']);
                     }
                 } else {
-                    $this->errors[] = new OAI2Exception('noMetadataFormats');
+                    $this->errors[] = new Exception('noMetadataFormats');
                 }
-            } catch (OAI2Exception $e) {
+            } catch (Exception $e) {
                 $this->errors[] = $e;
             }
         }
@@ -112,22 +111,22 @@ class OAI2Server {
     public function ListSets() {
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
-                $this->errors[] = new OAI2Exception('badArgument');
+                $this->errors[] = new Exception('badArgument');
             } else {
-                $this->errors[] = new OAI2Exception('badResumptionToken');
+                $this->errors[] = new Exception('badResumptionToken');
             }
         } else {
-            $this->errors[] = new OAI2Exception('noSetHierarchy');
+            $this->errors[] = new Exception('noSetHierarchy');
         }
     }
 
     public function GetRecord() {
         if (!isset($this->args['identifier']) || !isset($this->args['metadataPrefix'])) {
-            $this->errors[] = new OAI2Exception('badArgument');
+            $this->errors[] = new Exception('badArgument');
         } else {
             $metadataFormats = call_user_func($this->listMetadataFormatsCallback);
             if (!isset($metadataFormats[$this->args['metadataPrefix']])) {
-                $this->errors[] = new OAI2Exception('cannotDisseminateFormat');
+                $this->errors[] = new Exception('cannotDisseminateFormat');
             }
         }
         if (empty($this->errors)) {
@@ -139,9 +138,9 @@ class OAI2Server {
                         $this->addMetadata($cur_record, $record['metadata']);
                     }
                 } else {
-                    $this->errors[] = new OAI2Exception('idDoesNotExist');
+                    $this->errors[] = new Exception('idDoesNotExist');
                 }
-            } catch (OAI2Exception $e) {
+            } catch (Exception $e) {
                 $this->errors[] = $e;
             }
         }
@@ -159,49 +158,49 @@ class OAI2Server {
         $until = isset($this->args['until']) ? $this->args['until'] : '';
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
-                $this->errors[] = new OAI2Exception('badArgument');
+                $this->errors[] = new Exception('badArgument');
             } else {
                 if (!file_exists($this->token_prefix.$this->args['resumptionToken'])) {
-                    $this->errors[] = new OAI2Exception('badResumptionToken');
+                    $this->errors[] = new Exception('badResumptionToken');
                 } else {
                     if (filemtime($this->token_prefix.$this->args['resumptionToken'])+$this->token_valid < time()) {
-                        $this->errors[] = new OAI2Exception('badResumptionToken');
+                        $this->errors[] = new Exception('badResumptionToken');
                     } else {
                         if ($readings = $this->readResumptionToken($this->token_prefix.$this->args['resumptionToken'])) {
                             list($deliveredRecords, $metadataPrefix, $from, $until) = $readings;
                         } else {
-                            $this->errors[] = new OAI2Exception('badResumptionToken');
+                            $this->errors[] = new Exception('badResumptionToken');
                         }
                     }
                 }
             }
         } else {
             if (!isset($this->args['metadataPrefix'])) {
-                $this->errors[] = new OAI2Exception('badArgument');
+                $this->errors[] = new Exception('badArgument');
             } else {
                 $metadataFormats = call_user_func($this->listMetadataFormatsCallback);
                 if (!isset($metadataFormats[$this->args['metadataPrefix']])) {
-                    $this->errors[] = new OAI2Exception('cannotDisseminateFormat');
+                    $this->errors[] = new Exception('cannotDisseminateFormat');
                 }
             }
             if (isset($this->args['from'])) {
                 if (!$this->checkDateFormat($this->args['from'])) {
-                    $this->errors[] = new OAI2Exception('badArgument');
+                    $this->errors[] = new Exception('badArgument');
                 }
             }
             if (isset($this->args['until'])) {
                 if (!$this->checkDateFormat($this->args['until'])) {
-                    $this->errors[] = new OAI2Exception('badArgument');
+                    $this->errors[] = new Exception('badArgument');
                 }
             }
             if (isset($this->args['set'])) {
-                $this->errors[] = new OAI2Exception('noSetHierarchy');
+                $this->errors[] = new Exception('noSetHierarchy');
             }
         }
         if (empty($this->errors)) {
             try {
                 if (!($records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true))) {
-                    throw new OAI2Exception('noRecordsMatch');
+                    throw new Exception('noRecordsMatch');
                 }
                 $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
                 foreach ($records as $record) {
@@ -227,7 +226,7 @@ class OAI2Server {
                 if (isset($restoken)) {
                     $this->response->createResumptionToken($restoken, $expirationDatetime, $records_count, $deliveredRecords-$maxItems);
                 }
-            } catch (OAI2Exception $e) {
+            } catch (Exception $e) {
                 $this->errors[] = $e;
             }
         }
@@ -235,7 +234,7 @@ class OAI2Server {
 
     private function addMetadata($cur_record, $file) {
         $meta_node =  $this->response->addChild($cur_record, 'metadata');
-        $fragment = new DOMDocument();
+        $fragment = new \DOMDocument();
         $fragment->load($file);
         $this->response->importFragment($meta_node, $fragment);
     }
@@ -281,9 +280,9 @@ class OAI2Server {
     }
 
     private function checkDateFormat($date) {
-        $datetime = DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $date);
+        $datetime = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $date);
         if ($datetime === false) {
-            $datetime = DateTime::createFromFormat('Y-m-d', $date);
+            $datetime = \DateTime::createFromFormat('Y-m-d', $date);
         }
         return ($datetime !== false) && !array_sum($datetime->getLastErrors());
     }

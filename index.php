@@ -20,8 +20,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once './Configuration/Main.php';
-require_once './Classes/OAI2Server.php';
+namespace OCC\OAI2;
+
+// Register autoloader
+spl_autoload_register(function ($class) {
+    $base_dir = __DIR__.'/Classes/';
+    $len = strlen(__NAMESPACE__);
+    if (strncmp(__NAMESPACE__, $class, $len) !== 0) {
+        return;
+    }
+    $relative_class = substr($class, $len);
+    $file = $base_dir.str_replace('\\', '/', $relative_class).'.php';
+    if (file_exists($file)) {
+        require $file;
+    }
+});
+
+// Load configuration
+require './Configuration/Main.php';
 
 // Get all available records and their respective status and timestamps
 $records = [];
@@ -64,7 +80,7 @@ $identifyResponse = [
     'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
 ];
 
-$oai2 = new OAI2Server(
+$oai2 = new Server(
     $baseURL,
     $_GET,
     $identifyResponse,
@@ -115,7 +131,7 @@ $oai2 = new OAI2Server(
                 if (!empty($formats)) {
                     return $formats;
                 } else {
-                    throw new OAI2Exception('idDoesNotExist');
+                    throw new Exception('idDoesNotExist');
                 }
             } else {
                 return $config['metadataPrefix'];

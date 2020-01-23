@@ -22,7 +22,7 @@ if (php_sapi_name() !== 'cli') {
     exit;
 }
 
-require_once './Configuration/Main.php';
+require './Configuration/Main.php';
 
 /**
  * Format output string
