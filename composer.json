@@ -1,0 +1,57 @@
+{
+    "name": "opencultureconsulting/oai_pmh",
+    "description": "This is a stand-alone and easy to install data provider implementing the Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH).",
+    "type": "project",
+    "keywords": [
+        "oai",
+        "oai-pmh",
+        "data-provider",
+        "code4lib",
+        "repository"
+    ],
+    "homepage": "https://github.com/opencultureconsulting/oai_pmh",
+    "readme": "README.md",
+    "license": ["GPL-3.0-or-later"],
+    "authors": [
+        {
+            "name": "Sebastian Meyer",
+            "email": "sebastian.meyer@opencultureconsulting.com",
+            "homepage": "https://www.opencultureconsulting.com",
+            "role": "maintainer"
+        },
+        {
+            "name": "Heinrich Stamerjohanns",
+            "email": "stamer@uni-oldenburg.de",
+            "role": "developer"
+        },
+        {
+            "name": "Jianfeng Li",
+            "email": "jianfeng.li@adelaide.edu.au",
+            "role": "developer"
+        },
+        {
+            "name": "Daniel Neis Araujo",
+            "email": "danielneis@gmail.com",
+            "role": "developer"
+        },
+        {
+            "name": "Kazimierz Pietruszewski",
+            "email": "antenna@antenna.io",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/opencultureconsulting/oai_pmh/issues",
+        "source": "https://github.com/opencultureconsulting/oai_pmh",
+        "docs": "https://github.com/opencultureconsulting/oai_pmh/blob/master/README.md"
+    },
+    "require": {
+        "php": "^7.0",
+        "ext-xml": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "OCC\\OAI2\\": "Classes/"
+        }
+    }
+}
