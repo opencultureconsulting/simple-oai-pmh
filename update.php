@@ -22,7 +22,7 @@ if (php_sapi_name() !== 'cli') {
     exit;
 }
 
-require './Configuration/Main.php';
+require __DIR__.'/Configuration/Main.php';
 
 /**
  * Format output string
@@ -71,7 +71,7 @@ $sourceDir = rtrim($sourceDir, '/').'/';
 // Prepend script's path if dataDir is not an absolute path
 $dataDir = rtrim($config['dataDirectory'], '/').'/'.$metadataPrefix.'/';
 if (strpos($dataDir, '/') !== 0) {
-    $dataDir = dirname(__FILE__).'/'.$dataDir;
+    $dataDir = __DIR__.'/'.$dataDir;
 }
 // Check dataDir permissions
 if (!is_dir($dataDir) || !is_writable($dataDir)) {

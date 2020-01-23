@@ -20,24 +20,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace OCC\OAI2;
+use OCC\OAI2\Exception;
+use OCC\OAI2\Server;
 
-// Register autoloader
-spl_autoload_register(function ($class) {
-    $base_dir = __DIR__.'/Classes/';
-    $len = strlen(__NAMESPACE__);
-    if (strncmp(__NAMESPACE__, $class, $len) !== 0) {
-        return;
-    }
-    $relative_class = substr($class, $len);
-    $file = $base_dir.str_replace('\\', '/', $relative_class).'.php';
-    if (file_exists($file)) {
-        require $file;
-    }
-});
+// Register PSR-4 autoloader
+require __DIR__.'/vendor/autoload.php';
 
 // Load configuration
-require './Configuration/Main.php';
+require __DIR__.'/Configuration/Main.php';
 
 // Get all available records and their respective status and timestamps
 $records = [];
