@@ -10,7 +10,7 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 ## Installation
 
-1. Deploy all the files to a webserver.
+1. Run `composer create-project opencultureconsulting/oai_pmh <path>`.
 
 2. Edit `Configuration/Main.php` and adjust the settings according to your preferences.
 
@@ -22,13 +22,13 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 ## Upgrading
 
-1. Backup all data (especially `Configuration/Main.php`)!
+1. Backup `Configuration/Main.php` and your data directory!
 
-2. Replace all files except your data directory with the new release.
+2. Delete everything and re-install by running `composer create-project opencultureconsulting/oai_pmh <path>`.
 
-3. Move your configuration back into `Configuration/Main.php`.
+3. Move your configuration back into `Configuration/Main.php` and restore your data directory.
 
-4. Congratulations! Now you are running a new version of the Simple OAI-PMH 2.0 Data Provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
+4. Congratulations! Now you are running the newest version of the Simple OAI-PMH 2.0 Data Provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
 
 ## Updating
 

@@ -59,7 +59,9 @@ $config = [
     // Directory containing the records
     //
     //  Make sure the given path is readable and there is a subdirectory for every
-    //  'metadataPrefix' you specified above.
+    //  'metadataPrefix' you specified above. Although the given example points to
+    //  a directory inside the document root it is highly recommended to place the
+    //  data directory somewhere else. This will make upgrading so much easier!
     'dataDirectory' => './Data/',
 
     // Maximum number of records to return before giving a resumption token
