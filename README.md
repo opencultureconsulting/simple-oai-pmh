@@ -1,6 +1,6 @@
 # Simple OAI-PMH 2.0 Data Provider
 
-This is a stand-alone and easy to install data provider implementing the [Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH)](https://openarchives.org/pmh/). It serves records in any metadata format from directories of XML files using the directory name as `metadataPrefix`, the filename as `identifier` and the filemtime as datestamp. 0-byte files are considered deleted records and handled accordingly. Resumption tokens are managed using files. Sets are currently not supported.
+This is a stand-alone and easy to install data provider implementing the [Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH)](https://openarchives.org/pmh/). It serves records in any metadata format from directories of XML files using the directory name as `metadataPrefix`, the filename as `identifier` and the filemtime as datestamp. 0-byte files are considered deleted records and handled accordingly. Resumption tokens are managed using files. Sets are now supported.
 
 Just put the records as XML files in the data directory, adjust a few configuration settings and you are ready to go!
 
@@ -43,3 +43,9 @@ It was then modified in 2011 by [Jianfeng Li](mailto:jianfeng.li@adelaide.edu.au
 In 2013 [Daniel Neis Araujo](mailto:danielneis@gmail.com) at [Federal University of Santa Catarina](https://en.ufsc.br/) modified the project again in order to integrate it with [Moodle](https://moodle.org/). His implementation can be found on [GitHub](https://github.com/danielneis/oai_pmh). In 2014 [Kazimierz Pietruszewski](mailto:antenna@antenna.io) provided some [further bugfixes](https://github.com/antennaio/oai_pmh).
 
 The current implementation was derived from the latter in 2017 by [Sebastian Meyer](mailto:sebastian.meyer@opencultureconsutling.com) at [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](https://www.dla-marbach.de/en/). It is a stand-alone version focused on easy deployment and file based record handling.
+
+## History
+
+In progress :
+    Allow _POST and _GET HTTP request
+    Add support of Sets

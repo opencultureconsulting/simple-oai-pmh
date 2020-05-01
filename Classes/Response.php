@@ -27,7 +27,7 @@ class Response {
     public $doc; // DOMDocument. Handle of current XML Document object
 
     public function __construct($uri, $verb, $request_args) {
-        if (substr($uri, -1, 1) == '/') {
+        if (substr($uri, -1, 1) === '/') {
             $stylesheet = $uri.'Resources/Stylesheet.xsl';
         } else {
             $stylesheet = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://' : 'http://';

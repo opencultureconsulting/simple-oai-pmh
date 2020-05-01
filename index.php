@@ -20,115 +20,113 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+define('ABSPATH', __DIR__ . '/');
+
+use OCC\OAI2\Config;
+use OCC\OAI2\Data;
 use OCC\OAI2\Exception;
 use OCC\OAI2\Server;
+use OCC\OAI2\Helper;
 
 // Register PSR-4 autoloader
-require __DIR__.'/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-// Load configuration
-require __DIR__.'/Configuration/Main.php';
+// Init config manger
+$config = Config::getInstance();
+
+// Init data manger
+$data = Data::getInstance();
 
 // Get all available records and their respective status and timestamps
-$records = [];
-$deleted = [];
-$timestamps = [];
-$earliest = time();
-
-foreach ($config['metadataPrefix'] as $prefix => $uris) {
-    $files = glob(rtrim($config['dataDirectory'], '/').'/'.$prefix.'/*.xml');
-    foreach ($files as $file) {
-        $records[$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
-        $deleted[$prefix][pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
-        $timestamps[$prefix][filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
-        if (filemtime($file) < $earliest) {
-            $earliest = filemtime($file);
-        }
-    }
-    ksort($records[$prefix]);
-    reset($records[$prefix]);
-    ksort($timestamps[$prefix]);
-    reset($timestamps[$prefix]);
-}
-
-// Get current base URL
-$baseURL = $_SERVER['HTTP_HOST'].parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-    $baseURL = 'https://'.$baseURL;
-} else {
-    $baseURL = 'http://'.$baseURL;
-}
+$data->populate();
 
 // Build the Identify response
 $identifyResponse = [
-    'repositoryName' => $config['repositoryName'],
-    'baseURL' => $baseURL,
-    'protocolVersion' => '2.0',
-    'adminEmail' => $config['adminEmail'],
-    'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $earliest),
-    'deletedRecord' => $config['deletedRecord'],
-    'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
+    'repositoryName'    => $config->getConfigValue('repositoryName'),
+    'baseURL'           => Helper::getBaseURL(),
+    'protocolVersion'   => '2.0',
+    'adminEmail'        => $config->getConfigValue('adminEmail'),
+    'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $data->getEarliest()),
+    'deletedRecord'     => $config->getConfigValue('deletedRecord'),
+    'granularity'       => 'YYYY-MM-DDThh:mm:ssZ'
 ];
 
 $oai2 = new Server(
-    $baseURL,
-    $_GET,
+    Helper::getBaseURL(),
+    $_REQUEST,
     $identifyResponse,
     [
-        'GetRecord' => function ($identifier, $metadataPrefix) {
-            global $records, $deleted;
+        'GetRecord'           => function ($identifier, $metadataPrefix) {
+            $records = Data::getInstance()->getRecords();
+            $deleted = Data::getInstance()->getDeleted();
+
             if (empty($records[$metadataPrefix][$identifier])) {
                 return [];
-            } else {
-                return [
-                    'identifier' => $identifier,
-                    'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-                    'deleted' => $deleted[$metadataPrefix][$identifier],
-                    'metadata' => $records[$metadataPrefix][$identifier]
-                ];
             }
+
+            return [
+                'identifier' => $identifier,
+                'timestamp'  => filemtime($records[$metadataPrefix][$identifier]),
+                'deleted'    => $deleted[$metadataPrefix][$identifier],
+                'metadata'   => $records[$metadataPrefix][$identifier]
+            ];
         },
-        'ListRecords' => function ($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
-            global $records, $deleted, $timestamps;
+        'ListRecords'         => function (
+            $metadataPrefix,
+            $from = null,
+            $until = null,
+            $count = false,
+            $deliveredRecords = 0,
+            $maxItems = 100
+        ) {
+            $records    = Data::getInstance()->getRecords();
+            $deleted    = Data::getInstance()->getDeleted();
+            $timestamps = Data::getInstance()->getTimestamps();
+
             $resultSet = [];
-            foreach ($timestamps[$metadataPrefix] as $timestamp => $identifiers) {
-                if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
-                    foreach ($identifiers as $identifier) {
-                        $resultSet[] = [
-                            'identifier' => $identifier,
-                            'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-                            'deleted' => $deleted[$metadataPrefix][$identifier],
-                            'metadata' => $records[$metadataPrefix][$identifier]
-                        ];
+            if (isset($timestamps[$metadataPrefix])) {
+                foreach ((array)$timestamps[$metadataPrefix] as $timestamp => $identifiers) {
+                    if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
+                        foreach ($identifiers as $identifier) {
+                            $resultSet[] = [
+                                'identifier' => $identifier,
+                                'timestamp'  => filemtime($records[$metadataPrefix][$identifier]),
+                                'deleted'    => $deleted[$metadataPrefix][$identifier],
+                                'metadata'   => $records[$metadataPrefix][$identifier]
+                            ];
+                        }
                     }
                 }
             }
+
             if ($count) {
                 return count($resultSet);
-            } else {
-                return array_slice($resultSet, $deliveredRecords, $maxItems);
             }
+
+            return array_slice($resultSet, $deliveredRecords, $maxItems);
         },
         'ListMetadataFormats' => function ($identifier = '') {
-            global $config, $records;
-            if (!empty($identifier)) {
+            $records = Data::getInstance()->getRecords();
+            $config  = Config::getInstance()->getConfig();
+
+            if ( ! empty($identifier)) {
                 $formats = [];
                 foreach ($records as $format => $record) {
-                    if (!empty($record[$identifier])) {
+                    if ( ! empty($record[$identifier])) {
                         $formats[$format] = $config['metadataPrefix'][$format];
                     }
                 }
-                if (!empty($formats)) {
+                if ( ! empty($formats)) {
                     return $formats;
                 } else {
                     throw new Exception('idDoesNotExist');
                 }
-            } else {
-                return $config['metadataPrefix'];
             }
+
+            return $config['metadataPrefix'];
         }
     ],
-    $config
+    $config->getConfig()
 );
 
 $response = $oai2->response();
@@ -136,7 +134,7 @@ $response = $oai2->response();
 if (isset($return)) {
     return $response;
 } else {
-    $response->formatOutput = true;
+    $response->formatOutput       = true;
     $response->preserveWhiteSpace = false;
     header('Content-Type: text/xml');
     echo $response->saveXML();

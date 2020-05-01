@@ -63,6 +63,7 @@ class Server {
         $errorResponse = new Response($this->uri, $this->verb, $this->args);
         $oai_node = $errorResponse->doc->documentElement;
         foreach ($this->errors as $e) {
+            /** @var $e Exception */
             $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
             $node->setAttribute('code', $e->getOAI2Code());
         }
@@ -243,13 +244,13 @@ class Server {
         list($usec, $sec) = explode(' ', microtime());
         $token = ((int)($usec*1000) + (int)($sec*1000)).'_'.$metadataPrefix;
         $file = fopen($this->token_prefix.$token, 'w');
-        if ($file == false) {
+        if ($file === false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
-        fputs($file, $deliveredRecords.'#');
-        fputs($file, $metadataPrefix.'#');
-        fputs($file, $from.'#');
-        fputs($file, $until);
+        fwrite($file, $deliveredRecords . '#');
+        fwrite($file, $metadataPrefix.'#');
+        fwrite($file, $from.'#');
+        fwrite($file, $until);
         fclose($file);
         return $token;
     }
@@ -257,7 +258,7 @@ class Server {
     private function readResumptionToken($resumptionToken) {
         $rtVal = false;
         $file = fopen($resumptionToken, 'r');
-        if ($file != false) {
+        if ($file !== false) {
             $filetext = fgets($file, 255);
             $textparts = explode('#', $filetext);
             fclose($file);

@@ -25,7 +25,7 @@ namespace OCC\OAI2;
 class Exception extends \Exception {
 
     public function __construct($code) {
-        $this->errorTable = [
+        $errorTable = [
             'badArgument' => [
                 'text' => 'The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.',
             ],
@@ -51,7 +51,7 @@ class Exception extends \Exception {
                 'text' => 'The repository does not support sets.',
             ],
         ];
-        parent::__construct($this->errorTable[$code]['text']);
+        parent::__construct($errorTable[$code]['text']);
         $this->code = $code;
     }
 
