@@ -24,7 +24,6 @@ namespace OCC\OAI2;
 
 class Response
 {
-
     public $doc; // DOMDocument. Handle of current XML Document object
 
     public function __construct($uri, $verb, $request_args)
@@ -58,7 +57,7 @@ class Response
         if (!empty($this->verb)) {
             $request->setAttribute('verb', $this->verb);
         }
-        
+
         foreach ($request_args as $key => $value) {
             // TODO, allow only RFC argument
             $request->setAttribute($key, $value);
@@ -75,7 +74,7 @@ class Response
      * @return \DOMElement $added_node * The newly created node
      *
      */
-    public function addChild($mom_node, $name, $value = '')
+    public function addChild($mom_node, $name, $value = ''): \DOMElement
     {
         $added_node = $this->doc->createElement($name, $value);
         $added_node = $mom_node->appendChild($added_node);
@@ -90,10 +89,10 @@ class Response
      * @param string $nodeName The name of appending node.
      * @param string $value The content of appending node.
      *
+     * @return \DOMElement
      * @see createHeader, importFragment
-     *
      */
-    public function addToVerbNode($nodeName, $value = null)
+    public function addToVerbNode($nodeName, $value = null): \DOMElement
     {
         if (!isset($this->verbNode) && !empty($this->verb)) {
             $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb);
@@ -112,8 +111,9 @@ class Response
      * In normal cases, $add_to_node is the <record> node created previously.
      * When it is null, the newly created header node is attatched to $this->verbNode.
      * Otherwise it will be attached to the desired node defined in $add_to_node.
+     * @return \DOMElement
      */
-    public function createHeader($identifier, $timestamp, $deleted = false, $add_to_node = null)
+    public function createHeader($identifier, $timestamp, $deleted = false, $add_to_node = null): \DOMElement
     {
         if (is_null($add_to_node)) {
             $header_node = $this->addToVerbNode('header');
@@ -156,7 +156,7 @@ class Response
      * @return \DOMElement $added_node * The newly created node
      *
      */
-    public function importFragment($mom_node, $fragment)
+    public function importFragment($mom_node, $fragment): \DOMElement
     {
         $added_node = $mom_node->appendChild($this->doc->importNode($fragment->documentElement, true));
 

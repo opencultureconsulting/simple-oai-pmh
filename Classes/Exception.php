@@ -24,7 +24,10 @@ namespace OCC\OAI2;
 
 class Exception extends \Exception
 {
-
+    /**
+     * Exception constructor.
+     * @param string $code
+     */
     public function __construct($code)
     {
         $errorTable = [
@@ -57,9 +60,11 @@ class Exception extends \Exception
         $this->code = $code;
     }
 
+    /**
+     * @return string
+     */
     public function getOAI2Code()
     {
         return $this->code;
     }
-
 }

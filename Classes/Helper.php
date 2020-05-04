@@ -27,12 +27,12 @@ class Helper
     /**
      * Get current base URL
      */
-    public static function getBaseURL()
+    public static function getBaseURL(): string
     {
         return self::getScheme() . $_SERVER['HTTP_HOST'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     }
 
-    public static function getScheme()
+    public static function getScheme(): string
     {
         return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
     }
