@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <record>
   <header>
-    <identifier>example</identifier>
+    <identifier>example1</identifier>
     <datestamp>2002-05-01T14:16:12Z</datestamp>
     <setSpec>set1</setSpec>
-    <setSpec>set1:subset1</setSpec>
-    <setSpec>set1:subset1:subsubset1</setSpec>
-    <setSpec>set1:subset2</setSpec>
-    <setSpec>set2</setSpec>
-    <setSpec>set3</setSpec>
   </header>
   <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

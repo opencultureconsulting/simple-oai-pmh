@@ -38,7 +38,8 @@ $config = Config::getInstance();
 $data = Data::getInstance();
 
 // Get all available records and their respective status and timestamps
-$data->populate();
+$data->populateRecords();
+$data->populateSets();
 
 // Build the Identify response
 $identifyResponse = [
@@ -75,10 +76,14 @@ $oai2 = new Server(
             $metadataPrefix,
             $from = null,
             $until = null,
+            $set = null,
             $count = false,
             $deliveredRecords = 0,
             $maxItems = 100
         ) {
+            if ( ! empty($set)) {
+                Data::getInstance()->populateRecords($set);
+            }
             $records    = Data::getInstance()->getRecords();
             $deleted    = Data::getInstance()->getDeleted();
             $timestamps = Data::getInstance()->getTimestamps();
@@ -92,11 +97,33 @@ $oai2 = new Server(
                                 'identifier' => $identifier,
                                 'timestamp'  => filemtime($records[$metadataPrefix][$identifier]),
                                 'deleted'    => $deleted[$metadataPrefix][$identifier],
-                                'metadata'   => $records[$metadataPrefix][$identifier]
+                                'data'       => $records[$metadataPrefix][$identifier]
                             ];
                         }
                     }
                 }
+            }
+
+            if ($count) {
+                return count($resultSet);
+            }
+
+            return array_slice($resultSet, $deliveredRecords, $maxItems);
+        },
+        'ListSets'            => function (
+            $count = false,
+            $deliveredRecords = 0,
+            $maxItems = 100
+        ) {
+            $sets = Data::getInstance()->getSets();
+
+            $resultSet = [];
+
+            foreach ($sets as $set) {
+                $resultSet[] = [
+                    'identifier' => $set,
+                    'data'       => Data::getInstance()->getSetFile($set),
+                ];
             }
 
             if ($count) {
@@ -137,5 +164,8 @@ if (isset($return)) {
     $response->formatOutput       = true;
     $response->preserveWhiteSpace = false;
     header('Content-Type: text/xml');
-    echo $response->saveXML();
+
+    $xml_string = $response->saveXML();
+    $xml_string = preg_replace('/(?:^|\G)  /um', "\t", $xml_string);
+    echo $xml_string;
 }

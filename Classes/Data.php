@@ -29,13 +29,14 @@ class Data
     private $records = [];
     private $deleted = [];
     private $timestamps = [];
+    private $sets = [];
 
     private $earliest;
 
     /**
      * @return Data
      */
-    public static function getInstance()
+    public static function getInstance(): Data
     {
         if (self::$instance === null) {
             self::$instance = new static();
@@ -53,22 +54,80 @@ class Data
     {
     }
 
-    public function populate()
+    public function populateSets()
     {
         $config = Config::getInstance();
 
         foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
-            $files = glob(rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix . '/*.xml');
-            foreach ($files as $file) {
-                $this->records[$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
-                $this->deleted[$prefix][pathinfo($file, PATHINFO_FILENAME)] = ! filesize($file);
-                $this->timestamps[$prefix][filemtime($file)][]              = pathinfo($file, PATHINFO_FILENAME);
-                if (filemtime($file) < $this->earliest) {
-                    $this->earliest = filemtime($file);
+            $directory = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix;
+
+            $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
+            $xml_files = new \RegexIterator($all_files, '/\.xml$/');
+
+            foreach ($xml_files as $fileInfo) {
+                $file = $fileInfo->getPathname();
+
+                // Identity sets
+                if (basename($file) === $config->getConfigValue('setDefinition')) {
+                    // Build set name
+                    $setName = str_replace($directory, '', $fileInfo->getPath());
+                    $setName = trim($setName, '/');
+                    $setName = str_replace('/', ':', $setName);
+
+                    $this->sets[] = $setName;
+                }
+            }
+        }
+    }
+
+    public function resetRecords()
+    {
+        $this->records = array();
+        $this->deleted = array();
+        $this->timestamps = array();
+        $this->earliest = time();
+    }
+
+    public function populateRecords($set = '')
+    {
+        $this->resetRecords();
+
+        $config = Config::getInstance();
+
+        foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
+            $directory = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix;
+
+            $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
+            $xml_files = new \RegexIterator($all_files, '/\.xml$/');
+
+            foreach ($xml_files as $fileInfo) {
+                $filePath = $fileInfo->getPathname();
+                $fileName = $fileInfo->getBasename();
+
+                if (basename($filePath) === $config->getConfigValue('setDefinition')) {
+                    continue;
+                }
+
+                // Build set name
+                $setName = str_replace($directory, '', $fileInfo->getPath());
+                $setName = trim($setName, '/');
+                $setName = str_replace('/', ':', $setName);
+
+                // Filter to a set
+                if (!empty($set) && $setName !== $set) {
+                    continue;
+                }
+
+                $this->records[$prefix][$fileName] = $filePath;
+                $this->deleted[$prefix][$fileName] = !filesize($filePath);
+                $this->timestamps[$prefix][filemtime($filePath)][] = $fileName;
+                // TODO: Bug with element on doublon
+                if (filemtime($filePath) < $this->earliest) {
+                    $this->earliest = filemtime($filePath);
                 }
             }
 
-            if ( ! empty($files)) {
+            if (isset($this->records[$prefix])) {
                 ksort($this->records[$prefix]);
                 reset($this->records[$prefix]);
                 ksort($this->timestamps[$prefix]);
@@ -76,7 +135,6 @@ class Data
             }
         }
     }
-
 
     /**
      * @return array
@@ -108,5 +166,29 @@ class Data
     public function getEarliest(): int
     {
         return $this->earliest;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSets(): array
+    {
+        return $this->sets;
+    }
+
+    public function getSetFile(string $set)
+    {
+        $config = Config::getInstance();
+
+        $setName = $config->getConfigValue('setDefinition');
+
+        foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
+            $file = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix . "/$set/$setName";
+            if (is_file($file)) {
+                return $file;
+            }
+        }
+
+        return false;
     }
 }

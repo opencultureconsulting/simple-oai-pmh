@@ -22,9 +22,11 @@
 
 namespace OCC\OAI2;
 
-class Exception extends \Exception {
+class Exception extends \Exception
+{
 
-    public function __construct($code) {
+    public function __construct($code)
+    {
         $errorTable = [
             'badArgument' => [
                 'text' => 'The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.',
@@ -55,7 +57,8 @@ class Exception extends \Exception {
         $this->code = $code;
     }
 
-    public function getOAI2Code() {
+    public function getOAI2Code()
+    {
         return $this->code;
     }
 

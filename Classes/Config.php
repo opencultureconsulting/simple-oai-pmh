@@ -61,11 +61,11 @@ class Config
     }
 
     /**
+     * @param string $key
      * @return mixed
      *
-     * @param string $key
      */
-    public function getConfigValue( string $key )
+    public function getConfigValue(string $key)
     {
         return $this->config[$key] ?? null;
     }

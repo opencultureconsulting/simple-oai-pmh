@@ -26,20 +26,25 @@ namespace OCC\OAI2;
  * This is an implementation of OAI Data Provider version 2.0.
  * @see http://www.openarchives.org/OAI/2.0/openarchivesprotocol.htm
  */
-class Server {
+class Server
+{
 
     public $errors = [];
     private $args = [];
+    private $uri = '';
     private $verb = '';
+    private $max_sets = 1;
     private $max_records = 100;
-    private $token_prefix = '/tmp/oai2-';
+    private $token_prefix = '';
     private $token_valid = 86400;
 
-    public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
+    public function __construct($uri, $args, $identifyResponse, $callbacks, $config)
+    {
         $this->uri = $uri;
         $verbs = ['Identify', 'ListMetadataFormats', 'ListSets', 'ListIdentifiers', 'ListRecords', 'GetRecord'];
-        if (empty($args['verb']) || !in_array($args['verb'], $verbs)) {
+        if (empty($args['verb']) || !in_array($args['verb'], $verbs, true)) {
             $this->errors[] = new Exception('badVerb');
+
             return;
         }
         $this->verb = $args['verb'];
@@ -48,18 +53,23 @@ class Server {
         $this->identifyResponse = $identifyResponse;
         $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
         $this->listRecordsCallback = $callbacks['ListRecords'];
+        $this->listSetsCallback = $callbacks['ListSets'];
         $this->getRecordCallback = $callbacks['GetRecord'];
         $this->max_records = $config['maxRecords'];
+        $this->max_sets = $config['maxSets'];
         $this->token_prefix = $config['tokenPrefix'];
         $this->token_valid = $config['tokenValid'];
         $this->response = new Response($this->uri, $this->verb, $this->args);
-        call_user_func([$this, $this->verb]);
+
+        $this->{$this->verb}();
     }
 
-    public function response() {
+    public function response()
+    {
         if (empty($this->errors)) {
             return $this->response->doc;
         }
+
         $errorResponse = new Response($this->uri, $this->verb, $this->args);
         $oai_node = $errorResponse->doc->documentElement;
         foreach ($this->errors as $e) {
@@ -67,10 +77,12 @@ class Server {
             $node = $errorResponse->addChild($oai_node, 'error', $e->getMessage());
             $node->setAttribute('code', $e->getOAI2Code());
         }
+
         return $errorResponse->doc;
     }
 
-    public function Identify() {
+    public function Identify()
+    {
         if (count($this->args) > 0) {
             foreach ($this->args as $key => $val) {
                 $this->errors[] = new Exception('badArgument');
@@ -82,10 +94,11 @@ class Server {
         }
     }
 
-    public function ListMetadataFormats() {
+    public function ListMetadataFormats()
+    {
         $identifier = '';
         foreach ($this->args as $argument => $value) {
-            if ($argument != 'identifier') {
+            if ($argument !== 'identifier') {
                 $this->errors[] = new Exception('badArgument');
             } else {
                 $identifier = $value;
@@ -109,19 +122,71 @@ class Server {
         }
     }
 
-    public function ListSets() {
+    public function ListSets()
+    {
+        $maxItems = $this->max_sets;
+        $deliveredRecords = 0;
+
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
                 $this->errors[] = new Exception('badArgument');
             } else {
-                $this->errors[] = new Exception('badResumptionToken');
+                if (!file_exists($this->token_prefix . $this->args['resumptionToken'])) {
+                    $this->errors[] = new Exception('badResumptionToken');
+                } else {
+                    if (filemtime($this->token_prefix . $this->args['resumptionToken']) + $this->token_valid < time()) {
+                        $this->errors[] = new Exception('badResumptionToken');
+                    } else {
+                        if ($readings = $this->readResumptionToken(
+                            $this->token_prefix . $this->args['resumptionToken']
+                        )) {
+                            list($deliveredRecords) = $readings;
+                        } else {
+                            $this->errors[] = new Exception('badResumptionToken');
+                        }
+                    }
+                }
             }
-        } else {
-            $this->errors[] = new Exception('noSetHierarchy');
+        }
+
+        if (empty($this->errors)) {
+            try {
+                if (!($records_count = call_user_func($this->listSetsCallback, true, $deliveredRecords, $maxItems))) {
+                    throw new Exception('noSetHierarchy');
+                }
+
+                $records = call_user_func($this->listSetsCallback, false, $deliveredRecords, $maxItems);
+                $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+                foreach ($records as $record) {
+                    $this->addSetData($cur_record, $record['data']);
+                }
+
+                // Will we need a new ResumptionToken?
+                if ($records_count - $deliveredRecords > $maxItems) {
+                    $deliveredRecords += $maxItems;
+                    $restoken = $this->createResumptionToken($deliveredRecords, 'sets');
+                    $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time() + $this->token_valid);
+                } elseif (isset($this->args['resumptionToken'])) {
+                    // Last delivery, return empty resumptionToken
+                    $restoken = null;
+                    $expirationDatetime = null;
+                }
+                if (isset($restoken)) {
+                    $this->response->createResumptionToken(
+                        $restoken,
+                        $expirationDatetime,
+                        $records_count,
+                        $deliveredRecords - $maxItems
+                    );
+                }
+            } catch (Exception $e) {
+                $this->errors[] = $e;
+            }
         }
     }
 
-    public function GetRecord() {
+    public function GetRecord()
+    {
         if (!isset($this->args['identifier']) || !isset($this->args['metadataPrefix'])) {
             $this->errors[] = new Exception('badArgument');
         } else {
@@ -132,12 +197,21 @@ class Server {
         }
         if (empty($this->errors)) {
             try {
-                if ($record = call_user_func($this->getRecordCallback, $this->args['identifier'], $this->args['metadataPrefix'])) {
+                if ($record = call_user_func(
+                    $this->getRecordCallback,
+                    $this->args['identifier'],
+                    $this->args['metadataPrefix']
+                )) {
+                    $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+
+                    $this->addData($cur_record, $record['metadata']);
+                    /*
                     $cur_record = $this->response->addToVerbNode('record');
                     $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
                     if (!$record['deleted']) {
                         $this->addMetadata($cur_record, $record['metadata']);
                     }
+                    */
                 } else {
                     $this->errors[] = new Exception('idDoesNotExist');
                 }
@@ -147,28 +221,33 @@ class Server {
         }
     }
 
-    public function ListIdentifiers() {
+    public function ListIdentifiers()
+    {
         $this->ListRecords();
     }
 
-    public function ListRecords() {
+    public function ListRecords()
+    {
         $maxItems = $this->max_records;
         $deliveredRecords = 0;
         $metadataPrefix = isset($this->args['metadataPrefix']) ? $this->args['metadataPrefix'] : '';
         $from = isset($this->args['from']) ? $this->args['from'] : '';
         $until = isset($this->args['until']) ? $this->args['until'] : '';
+        $set = isset($this->args['set']) ? $this->args['set'] : '';
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
                 $this->errors[] = new Exception('badArgument');
             } else {
-                if (!file_exists($this->token_prefix.$this->args['resumptionToken'])) {
+                if (!file_exists($this->token_prefix . $this->args['resumptionToken'])) {
                     $this->errors[] = new Exception('badResumptionToken');
                 } else {
-                    if (filemtime($this->token_prefix.$this->args['resumptionToken'])+$this->token_valid < time()) {
+                    if (filemtime($this->token_prefix . $this->args['resumptionToken']) + $this->token_valid < time()) {
                         $this->errors[] = new Exception('badResumptionToken');
                     } else {
-                        if ($readings = $this->readResumptionToken($this->token_prefix.$this->args['resumptionToken'])) {
-                            list($deliveredRecords, $metadataPrefix, $from, $until) = $readings;
+                        if ($readings = $this->readResumptionToken(
+                            $this->token_prefix . $this->args['resumptionToken']
+                        )) {
+                            list($deliveredRecords, $metadataPrefix, $from, $until, $set) = $readings;
                         } else {
                             $this->errors[] = new Exception('badResumptionToken');
                         }
@@ -195,37 +274,80 @@ class Server {
                 }
             }
             if (isset($this->args['set'])) {
-                $this->errors[] = new Exception('noSetHierarchy');
+                // TODO: ?
+                //$this->errors[] = new Exception('noSetHierarchy');
             }
         }
         if (empty($this->errors)) {
             try {
-                if (!($records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true))) {
+                if (!($records_count = call_user_func(
+                    $this->listRecordsCallback,
+                    $metadataPrefix,
+                    $this->formatTimestamp($from),
+                    $this->formatTimestamp($until),
+                    $set,
+                    true
+                ))) {
                     throw new Exception('noRecordsMatch');
                 }
-                $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
+                $records = call_user_func(
+                    $this->listRecordsCallback,
+                    $metadataPrefix,
+                    $this->formatTimestamp($from),
+                    $this->formatTimestamp($until),
+                    $set,
+                    false,
+                    $deliveredRecords,
+                    $maxItems
+                );
+
+                if ('ListIdentifiers' === $this->verb) {
+                    $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+                    foreach ($records as $record) {
+                        $this->addMetadata($cur_record, $record['data']);
+                    }
+                } else { // ListRecords
+                    $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+                    foreach ($records as $record) {
+                        $this->addData($cur_record, $record['data']);
+                    }
+                }
+
+                /*
                 foreach ($records as $record) {
                     $cur_record = null;
-                    if ($this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
+                    if ($this->verb === 'ListRecords') { // for ListIdentifiers, only headers will be returned.
                         $cur_record = $this->response->addToVerbNode('record');
                     }
                     $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
-                    if (!$record['deleted'] && $this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
+                    if (!$record['deleted'] && $this->verb === 'ListRecords') { // for ListIdentifiers, only headers will be returned.
                         $this->addMetadata($cur_record, $record['metadata']);
                     }
                 }
+                */
                 // Will we need a new ResumptionToken?
                 if ($records_count - $deliveredRecords > $maxItems) {
-                    $deliveredRecords +=  $maxItems;
-                    $restoken = $this->createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until);
-                    $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);
+                    $deliveredRecords += $maxItems;
+                    $restoken = $this->createResumptionToken(
+                        $deliveredRecords,
+                        $metadataPrefix,
+                        $from,
+                        $until,
+                        $set
+                    );
+                    $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time() + $this->token_valid);
                 } elseif (isset($this->args['resumptionToken'])) {
                     // Last delivery, return empty resumptionToken
                     $restoken = null;
                     $expirationDatetime = null;
                 }
                 if (isset($restoken)) {
-                    $this->response->createResumptionToken($restoken, $expirationDatetime, $records_count, $deliveredRecords-$maxItems);
+                    $this->response->createResumptionToken(
+                        $restoken,
+                        $expirationDatetime,
+                        $records_count,
+                        $deliveredRecords - $maxItems
+                    );
                 }
             } catch (Exception $e) {
                 $this->errors[] = $e;
@@ -233,31 +355,58 @@ class Server {
         }
     }
 
-    private function addMetadata($cur_record, $file) {
-        $meta_node =  $this->response->addChild($cur_record, 'metadata');
-        $fragment = new \DOMDocument();
-        $fragment->load($file);
-        $this->response->importFragment($meta_node, $fragment);
+    private function addMetadata($meta_node, $file)
+    {
+        if (!is_file($file) || !is_readable($file)) {
+            return;
+        }
+
+        // TODO: For future, found an another way to extract header...
+        $tmp_content = file_get_contents($file);
+        preg_match('@<header>(.*)</header>@sm', $tmp_content, $matches);
+        if (empty($matches)) {
+            return;
+        }
+
+        $data = new \DOMDocument();
+        $data->loadXML('<?xml version="1.0" encoding="UTF-8"?>' . $matches[0]);
+
+        $this->response->importFragment($meta_node, $data);
     }
 
-    private function createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until) {
+    private function addData($meta_node, $file)
+    {
+        if (!is_file($file) || !is_readable($file)) {
+            return;
+        }
+
+        $data = new \DOMDocument();
+        $data->load($file);
+        $this->response->importFragment($meta_node, $data);
+    }
+
+    private function createResumptionToken($deliveredRecords, $metadataPrefix, $from = '', $until = '', $set = '')
+    {
         list($usec, $sec) = explode(' ', microtime());
-        $token = ((int)($usec*1000) + (int)($sec*1000)).'_'.$metadataPrefix;
-        $file = fopen($this->token_prefix.$token, 'w');
+        $token = ((int)($usec * 1000) + (int)($sec * 1000)) . '_' . $metadataPrefix;
+        $file = fopen($this->token_prefix . $token, 'wb');
         if ($file === false) {
             exit('Cannot write resumption token. Writing permission needs to be changed.');
         }
         fwrite($file, $deliveredRecords . '#');
-        fwrite($file, $metadataPrefix.'#');
-        fwrite($file, $from.'#');
-        fwrite($file, $until);
+        fwrite($file, $metadataPrefix . '#');
+        fwrite($file, $from . '#');
+        fwrite($file, $until . '#');
+        fwrite($file, $set);
         fclose($file);
+
         return $token;
     }
 
-    private function readResumptionToken($resumptionToken) {
+    private function readResumptionToken($resumptionToken)
+    {
         $rtVal = false;
-        $file = fopen($resumptionToken, 'r');
+        $file = fopen($resumptionToken, 'rb');
         if ($file !== false) {
             $filetext = fgets($file, 255);
             $textparts = explode('#', $filetext);
@@ -265,27 +414,41 @@ class Server {
             unlink($resumptionToken);
             $rtVal = array_values($textparts);
         }
+
         return $rtVal;
     }
 
-    private function formatDatestamp($timestamp) {
+    private function formatDatestamp($timestamp)
+    {
         return gmdate('Y-m-d\TH:i:s\Z', $timestamp);
     }
 
-    private function formatTimestamp($datestamp) {
-        if (is_array($time = strptime($datestamp, '%Y-%m-%dT%H:%M:%SZ')) || is_array($time = strptime($datestamp, '%Y-%m-%d'))) {
-            return gmmktime($time['tm_hour'], $time['tm_min'], $time['tm_sec'], $time['tm_mon'] + 1, $time['tm_mday'], $time['tm_year']+1900);
-        } else {
-            return null;
+    private function formatTimestamp($datestamp)
+    {
+        if (is_array($time = strptime($datestamp, '%Y-%m-%dT%H:%M:%SZ')) || is_array(
+                $time = strptime($datestamp, '%Y-%m-%d')
+            )) {
+            return gmmktime(
+                $time['tm_hour'],
+                $time['tm_min'],
+                $time['tm_sec'],
+                $time['tm_mon'] + 1,
+                $time['tm_mday'],
+                $time['tm_year'] + 1900
+            );
         }
+
+        return null;
     }
 
-    private function checkDateFormat($date) {
+    private function checkDateFormat($date)
+    {
         $datetime = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $date);
         if ($datetime === false) {
             $datetime = \DateTime::createFromFormat('Y-m-d', $date);
         }
-        return ($datetime !== false) && !array_sum($datetime->getLastErrors());
+
+        return ($datetime !== false) && !array_sum($datetime::getLastErrors());
     }
 
 }
