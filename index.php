@@ -97,7 +97,7 @@ $oai2 = new Server(
                     if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
                         $resultSet[] = [
                             'identifier' => $identifier,
-                            'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                            'timestamp' => $timestamp,
                             'deleted' => $deleted[$metadataPrefix][$identifier],
                             'data' => $records[$metadataPrefix][$identifier]
                         ];

@@ -26,58 +26,61 @@
  */
 
 $config = [
-	// A human readable name for the repository
-	'repositoryName' => 'Simple OAI 2.0 Data Provider',
+    // Show PHP errors ?
+    'debug' => true,
 
-	// Email address for contacting the repository owner
-	'adminEmail'     => 'admin@example.org',
+    // A human readable name for the repository
+    'repositoryName' => 'Simple OAI 2.0 Data Provider',
 
-	// Do you provide 0-byte files for deleted records?
-	//
-	//  Possible values:
-	//  "no" -> the repository does not maintain information about deletions
-	//  "transient" -> the repository maintains information about deletions, but
-	//                 does not guarantee them to be persistent (default)
-	//  "persistent" -> the repository maintains information about deletions with
-	//                  no time limit
-	'deletedRecord'  => 'transient',
+    // Email address for contacting the repository owner
+    'adminEmail' => 'admin@example.org',
 
-	// Metadata formats, schemas and namespaces of your records
-	//
-	//  The default is 'oai_dc' which is also required by the OAI-PMH specification,
-	//  but technically you can deliver any XML based data format you want. Just add
-	//  another entry with the 'metadataPrefix' as key and schema/namespace URIs as
-	//  array values or replace the default 'oai_dc' entry (not recommended).
-	'metadataPrefix' => [
-		'oai_dc' => [
-			'schema'    => 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
-			'namespace' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',
-		],
-	],
+    // Do you provide 0-byte files for deleted records?
+    //
+    //  Possible values:
+    //  "no" -> the repository does not maintain information about deletions
+    //  "transient" -> the repository maintains information about deletions, but
+    //                 does not guarantee them to be persistent (default)
+    //  "persistent" -> the repository maintains information about deletions with
+    //                  no time limit
+    'deletedRecord' => 'transient',
 
-	// Directory containing the records
-	//
-	//  Make sure the given path is readable and there is a subdirectory for every
-	//  'metadataPrefix' you specified above. Although the given example points to
-	//  a directory inside the document root it is highly recommended to place the
-	//  data directory somewhere else. This will make upgrading so much easier!
-	'dataDirectory'  => './Data/',
+    // Metadata formats, schemas and namespaces of your records
+    //
+    //  The default is 'oai_dc' which is also required by the OAI-PMH specification,
+    //  but technically you can deliver any XML based data format you want. Just add
+    //  another entry with the 'metadataPrefix' as key and schema/namespace URIs as
+    //  array values or replace the default 'oai_dc' entry (not recommended).
+    'metadataPrefix' => [
+        'oai_dc' => [
+            'schema' => 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
+            'namespace' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+        ],
+    ],
 
-	// Maximum number of records to return before giving a resumption token
-	'maxRecords'     => 100,
+    // Directory containing the records
+    //
+    //  Make sure the given path is readable and there is a subdirectory for every
+    //  'metadataPrefix' you specified above. Although the given example points to
+    //  a directory inside the document root it is highly recommended to place the
+    //  data directory somewhere else. This will make upgrading so much easier!
+    'dataDirectory' => './Data/',
 
-	// Maximum number of sets to return before giving a resumption token
-	'maxSets'        => 100,
+    // Maximum number of records to return before giving a resumption token
+    'maxRecords' => 3,
 
-	// Set description filename
-	'setDefinition'  => '_set_definition.xml',
+    // Maximum number of sets to return before giving a resumption token
+    'maxSets' => 3,
 
-	// Absolute path and filename prefix for saving resumption tokens
-	//
-	//  Make sure the given path is writable.
-	'tokenPrefix'    => sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'oai2-',
+    // Set description filename
+    'setDefinition' => '_set_definition.xml',
 
-	// Number of seconds a resumption token should be valid
-	'tokenValid'     => 86400, // 24 hours
+    // Absolute path and filename prefix for saving resumption tokens
+    //
+    //  Make sure the given path is writable.
+    'tokenPrefix' => sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'oai2-',
+
+    // Number of seconds a resumption token should be valid
+    'tokenValid' => 86400, // 24 hours
 ];
 

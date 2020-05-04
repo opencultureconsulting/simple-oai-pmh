@@ -89,13 +89,17 @@ class Response
      * @param string $nodeName The name of appending node.
      * @param string $value The content of appending node.
      *
+     * @param bool $flag
      * @return \DOMElement
      * @see createHeader, importFragment
      */
-    public function addToVerbNode($nodeName, $value = null): \DOMElement
+    public function addToVerbNode($nodeName, $value = null, $flag = false): \DOMElement
     {
         if (!isset($this->verbNode) && !empty($this->verb)) {
-            $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb);
+            $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb, $value);
+            if ( true === $flag ) {
+                return $this->verbNode;
+            }
         }
 
         return $this->addChild($this->verbNode, $nodeName, $value);

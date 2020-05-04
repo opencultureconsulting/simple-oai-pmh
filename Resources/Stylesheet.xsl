@@ -597,12 +597,6 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="key">Set</td>
-                    <td class="value">
-                        <xsl:value-of select="oai:set"/>
-                    </td>
-                </tr>
-                <tr>
                     <td class="key">Deleted</td>
                     <td class="value">
                         <xsl:choose>

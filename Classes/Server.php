@@ -88,8 +88,10 @@ class Server
                 $this->errors[] = new Exception('badArgument');
             }
         } else {
+            $cmf = $this->response->addToVerbNode('Identify', null, true);
+
             foreach ($this->identifyResponse as $key => $val) {
-                $this->response->addToVerbNode($key, $val);
+                $this->response->addChild($cmf, $key, $val);
             }
         }
     }
@@ -157,7 +159,7 @@ class Server
 
                 $records = call_user_func($this->listSetsCallback, false, $deliveredRecords, $maxItems);
 
-                $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+                $cur_record = $this->response->addToVerbNode($this->verb, null, true);
                 foreach ($records as $record) {
                     $this->addData($cur_record, $record['data']);
                 }
@@ -206,13 +208,6 @@ class Server
                     $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
 
                     $this->addData($cur_record, $record['metadata']);
-                    /*
-                    $cur_record = $this->response->addToVerbNode('record');
-                    $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
-                    if (!$record['deleted']) {
-                        $this->addMetadata($cur_record, $record['metadata']);
-                    }
-                    */
                 } else {
                     $this->errors[] = new Exception('idDoesNotExist');
                 }
@@ -274,10 +269,6 @@ class Server
                     $this->errors[] = new Exception('badArgument');
                 }
             }
-            if (isset($this->args['set'])) {
-                // TODO: ?
-                //$this->errors[] = new Exception('noSetHierarchy');
-            }
         }
         if (empty($this->errors)) {
             try {
@@ -303,29 +294,18 @@ class Server
                 );
 
                 if ('ListIdentifiers' === $this->verb) {
-                    $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+                    $cur_record = $this->response->addToVerbNode($this->verb, null, true);
+
                     foreach ($records as $record) {
                         $this->addMetadata($cur_record, $record['data']);
                     }
                 } else { // ListRecords
-                    $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
+                    $cur_record = $this->response->addToVerbNode($this->verb, null, true);
                     foreach ($records as $record) {
                         $this->addData($cur_record, $record['data']);
                     }
                 }
 
-                /*
-                foreach ($records as $record) {
-                    $cur_record = null;
-                    if ($this->verb === 'ListRecords') { // for ListIdentifiers, only headers will be returned.
-                        $cur_record = $this->response->addToVerbNode('record');
-                    }
-                    $this->response->createHeader($record['identifier'], $this->formatDatestamp($record['timestamp']), $record['deleted'], $cur_record);
-                    if (!$record['deleted'] && $this->verb === 'ListRecords') { // for ListIdentifiers, only headers will be returned.
-                        $this->addMetadata($cur_record, $record['metadata']);
-                    }
-                }
-                */
                 // Will we need a new ResumptionToken?
                 if ($records_count - $deliveredRecords > $maxItems) {
                     $deliveredRecords += $maxItems;
