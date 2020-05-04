@@ -29,13 +29,11 @@ class Helper
      */
     public static function getBaseURL()
     {
-        $baseURL = $_SERVER['HTTP_HOST'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-            $baseURL = 'https://' . $baseURL;
-        } else {
-            $baseURL = 'http://' . $baseURL;
-        }
+        return self::getScheme() . $_SERVER['HTTP_HOST'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    }
 
-        return $baseURL;
+    public static function getScheme()
+    {
+        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
     }
 }

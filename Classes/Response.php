@@ -32,17 +32,18 @@ class Response
         if (substr($uri, -1, 1) === '/') {
             $stylesheet = $uri . 'Resources/Stylesheet.xsl';
         } else {
-            $stylesheet = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://' : 'http://';
-            $stylesheet .= $_SERVER['HTTP_HOST'] . pathinfo(
-                    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
-                    PATHINFO_DIRNAME
-                ) . '/Resources/Stylesheet.xsl';
+            $stylesheet = Helper::getScheme();
+            $stylesheet .= $_SERVER['HTTP_HOST'];
+            $stylesheet .= pathinfo(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), PATHINFO_DIRNAME);
+            $stylesheet .= '/Resources/Stylesheet.xsl';
         }
+
         $this->verb = $verb;
         $this->doc = new \DOMDocument('1.0', 'UTF-8');
         $this->doc->appendChild(
             $this->doc->createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="' . $stylesheet . '"')
         );
+
         $oai_node = $this->doc->createElement('OAI-PMH');
         $oai_node->setAttribute('xmlns', 'http://www.openarchives.org/OAI/2.0/');
         $oai_node->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
@@ -52,10 +53,12 @@ class Response
         );
         $this->addChild($oai_node, 'responseDate', gmdate('Y-m-d\TH:i:s\Z'));
         $this->doc->appendChild($oai_node);
+
         $request = $this->addChild($this->doc->documentElement, 'request', $uri);
         if (!empty($this->verb)) {
             $request->setAttribute('verb', $this->verb);
         }
+        
         foreach ($request_args as $key => $value) {
             // TODO, allow only RFC argument
             $request->setAttribute($key, $value);
