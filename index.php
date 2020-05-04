@@ -43,13 +43,13 @@ $data->populateSets();
 
 // Build the Identify response
 $identifyResponse = [
-    'repositoryName'    => $config->getConfigValue('repositoryName'),
-    'baseURL'           => Helper::getBaseURL(),
-    'protocolVersion'   => '2.0',
-    'adminEmail'        => $config->getConfigValue('adminEmail'),
+    'repositoryName' => $config->getConfigValue('repositoryName'),
+    'baseURL' => Helper::getBaseURL(),
+    'protocolVersion' => '2.0',
+    'adminEmail' => $config->getConfigValue('adminEmail'),
     'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $data->getEarliest()),
-    'deletedRecord'     => $config->getConfigValue('deletedRecord'),
-    'granularity'       => 'YYYY-MM-DDThh:mm:ssZ'
+    'deletedRecord' => $config->getConfigValue('deletedRecord'),
+    'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
 ];
 
 $oai2 = new Server(
@@ -57,7 +57,7 @@ $oai2 = new Server(
     $_REQUEST,
     $identifyResponse,
     [
-        'GetRecord'           => function ($identifier, $metadataPrefix) {
+        'GetRecord' => function ($identifier, $metadataPrefix) {
             $records = Data::getInstance()->getRecords();
             $deleted = Data::getInstance()->getDeleted();
 
@@ -67,12 +67,12 @@ $oai2 = new Server(
 
             return [
                 'identifier' => $identifier,
-                'timestamp'  => filemtime($records[$metadataPrefix][$identifier]),
-                'deleted'    => $deleted[$metadataPrefix][$identifier],
-                'metadata'   => $records[$metadataPrefix][$identifier]
+                'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                'deleted' => $deleted[$metadataPrefix][$identifier],
+                'metadata' => $records[$metadataPrefix][$identifier]
             ];
         },
-        'ListRecords'         => function (
+        'ListRecords' => function (
             $metadataPrefix,
             $from = null,
             $until = null,
@@ -81,11 +81,11 @@ $oai2 = new Server(
             $deliveredRecords = 0,
             $maxItems = 100
         ) {
-            if ( ! empty($set)) {
+            if (!empty($set)) {
                 Data::getInstance()->populateRecords($set);
             }
-            $records    = Data::getInstance()->getRecords();
-            $deleted    = Data::getInstance()->getDeleted();
+            $records = Data::getInstance()->getRecords();
+            $deleted = Data::getInstance()->getDeleted();
             $timestamps = Data::getInstance()->getTimestamps();
 
             $resultSet = [];
@@ -95,9 +95,9 @@ $oai2 = new Server(
                         foreach ($identifiers as $identifier) {
                             $resultSet[] = [
                                 'identifier' => $identifier,
-                                'timestamp'  => filemtime($records[$metadataPrefix][$identifier]),
-                                'deleted'    => $deleted[$metadataPrefix][$identifier],
-                                'data'       => $records[$metadataPrefix][$identifier]
+                                'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                                'deleted' => $deleted[$metadataPrefix][$identifier],
+                                'data' => $records[$metadataPrefix][$identifier]
                             ];
                         }
                     }
@@ -110,7 +110,7 @@ $oai2 = new Server(
 
             return array_slice($resultSet, $deliveredRecords, $maxItems);
         },
-        'ListSets'            => function (
+        'ListSets' => function (
             $count = false,
             $deliveredRecords = 0,
             $maxItems = 100
@@ -122,7 +122,7 @@ $oai2 = new Server(
             foreach ($sets as $set) {
                 $resultSet[] = [
                     'identifier' => $set,
-                    'data'       => Data::getInstance()->getSetFile($set),
+                    'data' => Data::getInstance()->getSetFile($set),
                 ];
             }
 
@@ -134,16 +134,16 @@ $oai2 = new Server(
         },
         'ListMetadataFormats' => function ($identifier = '') {
             $records = Data::getInstance()->getRecords();
-            $config  = Config::getInstance()->getConfig();
+            $config = Config::getInstance()->getConfig();
 
-            if ( ! empty($identifier)) {
+            if (!empty($identifier)) {
                 $formats = [];
                 foreach ($records as $format => $record) {
-                    if ( ! empty($record[$identifier])) {
+                    if (!empty($record[$identifier])) {
                         $formats[$format] = $config['metadataPrefix'][$format];
                     }
                 }
-                if ( ! empty($formats)) {
+                if (!empty($formats)) {
                     return $formats;
                 } else {
                     throw new Exception('idDoesNotExist');
@@ -161,7 +161,7 @@ $response = $oai2->response();
 if (isset($return)) {
     return $response;
 } else {
-    $response->formatOutput       = true;
+    $response->formatOutput = true;
     $response->preserveWhiteSpace = false;
     header('Content-Type: text/xml');
 
