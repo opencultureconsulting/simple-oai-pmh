@@ -5,7 +5,7 @@
     <datestamp>2002-05-01T14:16:12Z</datestamp>
     <setSpec>set1</setSpec>
   </header>
-  <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/"
+  <metadata><oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
     <dc:title>Using Structural Metadata to Localize Experience of Digital Content</dc:title>
@@ -20,5 +20,5 @@
     <dc:date>2001-12-14</dc:date>
     <dc:type>e-print</dc:type>
     <dc:identifier>http://arXiv.org/abs/cs/0112017</dc:identifier>
-  </oai_dc:dc>
+  </oai_dc:dc></metadata>
 </record>

@@ -62,20 +62,18 @@ class Data
             $directory = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix;
 
             $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
-            $xml_files = new \RegexIterator($all_files, '/\.xml$/');
+            $xml_files = new \RegexIterator(
+                $all_files,
+                '/' . preg_quote($config->getConfigValue('setDefinition'), '/') . '$/'
+            );
 
             foreach ($xml_files as $fileInfo) {
-                $file = $fileInfo->getPathname();
+                // Build set name
+                $setName = str_replace($directory, '', $fileInfo->getPath());
+                $setName = trim($setName, '/');
+                $setName = str_replace('/', ':', $setName);
 
-                // Identity sets
-                if (basename($file) === $config->getConfigValue('setDefinition')) {
-                    // Build set name
-                    $setName = str_replace($directory, '', $fileInfo->getPath());
-                    $setName = trim($setName, '/');
-                    $setName = str_replace('/', ':', $setName);
-
-                    $this->sets[] = $setName;
-                }
+                $this->sets[] = $setName;
             }
         }
     }
@@ -120,7 +118,7 @@ class Data
 
                 $this->records[$prefix][$fileName] = $filePath;
                 $this->deleted[$prefix][$fileName] = !filesize($filePath);
-                $this->timestamps[$prefix][filemtime($filePath)][] = $fileName;
+                $this->timestamps[$prefix][$fileName] = filemtime($filePath);
                 // TODO: Bug with element on doublon
                 if (filemtime($filePath) < $this->earliest) {
                     $this->earliest = filemtime($filePath);
@@ -130,7 +128,7 @@ class Data
             if (isset($this->records[$prefix])) {
                 ksort($this->records[$prefix]);
                 reset($this->records[$prefix]);
-                ksort($this->timestamps[$prefix]);
+                asort($this->timestamps[$prefix]);
                 reset($this->timestamps[$prefix]);
             }
         }
@@ -181,6 +179,8 @@ class Data
         $config = Config::getInstance();
 
         $setName = $config->getConfigValue('setDefinition');
+
+        $set = str_replace(':', '/', $set);
 
         foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
             $file = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix . "/$set/$setName";

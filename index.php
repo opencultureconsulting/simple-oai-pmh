@@ -60,6 +60,9 @@ $oai2 = new Server(
         'GetRecord' => function ($identifier, $metadataPrefix) {
             $records = Data::getInstance()->getRecords();
             $deleted = Data::getInstance()->getDeleted();
+            $timestamps = Data::getInstance()->getTimestamps();
+
+            $identifier .= '.xml';
 
             if (empty($records[$metadataPrefix][$identifier])) {
                 return [];
@@ -67,7 +70,7 @@ $oai2 = new Server(
 
             return [
                 'identifier' => $identifier,
-                'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                'timestamp' => $timestamps[$metadataPrefix][$identifier],
                 'deleted' => $deleted[$metadataPrefix][$identifier],
                 'metadata' => $records[$metadataPrefix][$identifier]
             ];
@@ -90,16 +93,14 @@ $oai2 = new Server(
 
             $resultSet = [];
             if (isset($timestamps[$metadataPrefix])) {
-                foreach ((array)$timestamps[$metadataPrefix] as $timestamp => $identifiers) {
+                foreach ((array)$timestamps[$metadataPrefix] as $identifier => $timestamp) {
                     if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
-                        foreach ($identifiers as $identifier) {
-                            $resultSet[] = [
-                                'identifier' => $identifier,
-                                'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-                                'deleted' => $deleted[$metadataPrefix][$identifier],
-                                'data' => $records[$metadataPrefix][$identifier]
-                            ];
-                        }
+                        $resultSet[] = [
+                            'identifier' => $identifier,
+                            'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
+                            'deleted' => $deleted[$metadataPrefix][$identifier],
+                            'data' => $records[$metadataPrefix][$identifier]
+                        ];
                     }
                 }
             }

@@ -156,9 +156,10 @@ class Server
                 }
 
                 $records = call_user_func($this->listSetsCallback, false, $deliveredRecords, $maxItems);
+
                 $cur_record = $this->response->addChild($this->response->doc->documentElement, $this->verb);
                 foreach ($records as $record) {
-                    $this->addSetData($cur_record, $record['data']);
+                    $this->addData($cur_record, $record['data']);
                 }
 
                 // Will we need a new ResumptionToken?
