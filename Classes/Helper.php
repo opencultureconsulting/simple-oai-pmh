@@ -32,8 +32,48 @@ class Helper
         return self::getScheme() . $_SERVER['HTTP_HOST'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     }
 
+    /**
+     * Get scheme URL protocol
+     *
+     * @return string
+     */
     public static function getScheme(): string
     {
         return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    }
+
+    /**
+     * Format output string
+     *
+     * @param string $text
+     * @param string $format 'green' or 'red'
+     *
+     * @return string
+     */
+    public static function CliFormat(string $text, $format = '')
+    {
+        switch ($format) {
+            case 'green':
+                $text = "\033[0;92m$text\033[0m";
+                break;
+            case 'red':
+                $text = "\033[1;91m$text\033[0m";
+                break;
+            default:
+                break;
+        }
+
+        return $text;
+    }
+
+    public static function cliError(string $text)
+    {
+        echo self::CliFormat($text, 'red') . PHP_EOL;
+        exit();
+    }
+
+    public static function cliSuccess(string $text)
+    {
+        echo self::CliFormat($text, 'red') . PHP_EOL;
     }
 }

@@ -17,117 +17,124 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+define('ABSPATH', __DIR__ . '/');
+
+use OCC\OAI2\Config;
+use OCC\OAI2\Helper;
+use OCC\OAI2\Data;
+
 // Make this script only executable via commandline interface!
-if (php_sapi_name() !== 'cli') {
+if (PHP_SAPI !== 'cli') {
     exit;
-}
-
-require __DIR__.'/Configuration/Main.php';
-
-/**
- * Format output string
- *
- * @param string $text
- * @param string $format 'green' or 'red'
- *
- * @return string
- */
-function format($text, $format = '') {
-    switch ($format) {
-        case 'green':
-            $text = "\033[0;92m$text\033[0m";
-            break;
-        case 'red':
-            $text = "\033[1;91m$text\033[0m";
-            break;
-        default:
-            break;
-    }
-    return $text;
 }
 
 // Check mandatory cli arguments
-if (empty($argc) || $argc != 3) {
-    echo "Usage:\n";
-    echo "  php update.php [sourceDir] [metadataPrefix]\n";
-    echo "\n";
-    echo "Example:\n";
-    echo "  php update.php /tmp/import oai_dc\n";
-    echo "\n";
+if (empty($argc) || $argc !== 3) {
+    echo 'Usage:' . PHP_EOL;
+    echo '  php update.php [sourceDir] [metadataPrefix]' . PHP_EOL . PHP_EOL;
+    echo 'Example:' . PHP_EOL;
+    echo '  php update.php /tmp/import oai_dc' . PHP_EOL;
     exit;
 }
+
+// Register PSR-4 autoloader
+require ABSPATH . 'vendor/autoload.php';
+
+// Init config manager
+$config = Config::getInstance();
+
+// Init data manager
+$data = Data::getInstance();
+
+// Get data from CLI arguments
 list(, $sourceDir, $metadataPrefix) = $argv;
+
+// Remove endslash for sourceDir
+$sourceDir = rtrim($sourceDir, '/');
+
 // Check metadataPrefix
-if (empty($config['metadataPrefix'][$metadataPrefix])) {
-    echo "Error: metadataPrefix $metadataPrefix not defined in oai2config.php\n";
-    exit;
+if (!$config->metadataPrefixExists($metadataPrefix)) {
+    Helper::cliError("Error: metadataPrefix $metadataPrefix not defined in configuration file");
 }
+
 // Check sourceDir permissions
 if (!is_dir($sourceDir) || !is_readable($sourceDir)) {
-    echo "Error: $sourceDir not readable\n";
-    exit;
+    Helper::cliError("Error: $sourceDir not readable");
 }
-$sourceDir = rtrim($sourceDir, '/').'/';
-// Prepend script's path if dataDir is not an absolute path
-$dataDir = rtrim($config['dataDirectory'], '/').'/'.$metadataPrefix.'/';
-if (strpos($dataDir, '/') !== 0) {
-    $dataDir = __DIR__.'/'.$dataDir;
-}
+
+// Get dataDir from config
+$dataDir = Data::getInstance()->getDirectoryByMeta($metadataPrefix);
+
 // Check dataDir permissions
 if (!is_dir($dataDir) || !is_writable($dataDir)) {
-    echo "Error: $dataDir not writable\n";
-    exit;
+    Helper::cliError("Error: $dataDir not writable");
 }
+
 // Alright, let's start!
-echo "Updating $dataDir from $sourceDir\n";
-$todo = array ();
+echo "Updating $dataDir from $sourceDir" . PHP_EOL;
+
+$todo = array();
 $error = false;
-$oldFiles = glob($dataDir.'*.xml');
-foreach ($oldFiles as $oldFile) {
-    $todo[pathinfo($oldFile, PATHINFO_FILENAME)] = 'delete';
+
+// Mark all existing files for "DELATION"
+$_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dataDir));
+$oldFiles = new \RegexIterator($_files, '/\.xml$/');
+foreach ($oldFiles as $fileInfo) {
+    // Determine relative path
+    $relativePath = str_replace($dataDir, '', $fileInfo->getPathname());
+
+    $todo[$relativePath] = 'delete';
 }
-$newFiles = glob($sourceDir.'*.xml');
-foreach ($newFiles as $newFile) {
-    $todo[pathinfo($newFile, PATHINFO_FILENAME)] = 'update';
+
+// Change flag for "UPDATE", if file exist on source
+$_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDir));
+$newFiles = new \RegexIterator($_files, '/\.xml$/');
+foreach ($newFiles as $fileInfo) {
+    // Determine relative path
+    $relativePath = str_replace($sourceDir, '', $fileInfo->getPathname());
+
+    $todo[$relativePath] = 'update';
 }
-foreach ($todo as $identifier => $task) {
-    echo "  Checking record $identifier ... ";
-    if ($task === 'update') {
-        if (!file_exists($dataDir.$identifier.'.xml')) {
+
+foreach ($todo as $relativeFilePath => $task) {
+    echo "  Checking record $relativeFilePath ... ";
+    if ('update' === $task) {
+        if (!is_file($dataDir . $relativeFilePath)) {
             // Add file
-            if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
-                echo format('added', 'green')."\n";
+            if (copy($sourceDir . $relativeFilePath, $dataDir . $relativeFilePath)) {
+                echo Helper::CliFormat('added', 'green') . PHP_EOL;
             } else {
-                echo format('addition failed', 'red')."\n";
+                echo Helper::CliFormat('addition failed', 'red') . PHP_EOL;
                 $error = true;
             }
-        } elseif (md5_file($sourceDir.$identifier.'.xml') !== md5_file($dataDir.$identifier.'.xml')) {
+        } elseif (md5_file($sourceDir . $relativeFilePath) !== md5_file($dataDir . $relativeFilePath)) {
             // Replace file
-            if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
-                echo format('updated', 'green')."\n";
+            if (copy($sourceDir . $relativeFilePath, $dataDir . $relativeFilePath)) {
+                echo Helper::CliFormat('updated', 'green') . PHP_EOL;
             } else {
-                echo format('update failed', 'red')."\n";
+                echo Helper::CliFormat('update failed', 'red') . PHP_EOL;
                 $error = true;
             }
         } else {
-            echo "unchanged\n";
+            echo 'unchanged' . PHP_EOL;
         }
     } elseif ($task === 'delete') {
-        if (filesize($dataDir.$identifier.'.xml') !== 0) {
+        if (filesize($dataDir . $relativeFilePath) !== 0) {
             // Truncate file
-            if (fclose(fopen($dataDir.$identifier.'.xml', 'w'))) {
-                echo format('deleted', 'green')."\n";
+            if (fclose(fopen($dataDir . $relativeFilePath, 'wb'))) {
+                echo Helper::CliFormat('deleted', 'green') . PHP_EOL;
             } else {
-                echo format('deletion failed', 'red')."\n";
+                echo Helper::CliFormat('deletion failed', 'red') . PHP_EOL;
                 $error = true;
             }
         } else {
-            echo "unchanged\n";
+            echo 'unchanged' . PHP_EOL;
         }
     }
 }
+
 if ($error) {
-    echo "Update completed, but errors occurred. Please check the logs!\n";
+    Helper::cliError('Update completed, but errors occurred. Please check the logs!');
 } else {
-    echo "Update successfully completed!\n";
+    Helper::cliSuccess('Update successfully completed!');
 }

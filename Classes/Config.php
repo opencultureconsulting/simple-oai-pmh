@@ -65,7 +65,7 @@ class Config
     /**
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -78,5 +78,16 @@ class Config
     public function getConfigValue(string $key)
     {
         return $this->config[$key] ?? null;
+    }
+
+    /**
+     * Test if a metadata format exist!
+     *
+     * @param string $prefix
+     * @return bool
+     */
+    public function metadataPrefixExists(string $prefix): bool
+    {
+        return !empty($this->config['metadataPrefix'][$prefix]);
     }
 }

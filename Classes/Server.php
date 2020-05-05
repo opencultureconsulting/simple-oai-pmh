@@ -361,9 +361,30 @@ class Server
             return;
         }
 
-        $data = new \DOMDocument();
-        $data->load($file);
+        if (filesize($file) === 0) {
+            $data = new \DOMDocument();
+            $data->loadXML($this->getEmptyRecord($file));
+        } else {
+            $data = new \DOMDocument();
+            $data->load($file);
+        }
+
+
         $this->response->importFragment($meta_node, $data);
+    }
+
+    private function getEmptyRecord($file)
+    {
+        // Fake a empty document
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+        $xml .= '<record>';
+        $xml .= '<header status="deleted">';
+        $xml .= '<identifier>' . basename($file, '.xml') . '</identifier>';
+        $xml .= '<datestamp>' . $this->formatDatestamp(filemtime($file)) . '</datestamp>';
+        $xml .= '</header>';
+        $xml .= '</record>';
+
+        return $xml;
     }
 
     private function createResumptionToken($deliveredRecords, $metadataPrefix, $from = '', $until = '', $set = '')

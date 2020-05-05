@@ -54,12 +54,26 @@ class Data
     {
     }
 
+    public function getDirectoryByMeta($prefix)
+    {
+        $config = Config::getInstance();
+
+        $directory = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix;
+
+        // Prepend script's path if dataDir is not an absolute path
+        if (strpos($directory, '/') !== 0) {
+            $directory = ABSPATH . $directory;
+        }
+
+        return realpath($directory);
+    }
+
     public function populateSets()
     {
         $config = Config::getInstance();
 
-        foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
-            $directory = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix;
+        foreach ($config->getConfigValue('metadataPrefix') as $metadataPrefix => $uris) {
+            $directory = $this->getDirectoryByMeta($metadataPrefix);
 
             $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
             $xml_files = new \RegexIterator(
@@ -92,8 +106,8 @@ class Data
 
         $config = Config::getInstance();
 
-        foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
-            $directory = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix;
+        foreach ($config->getConfigValue('metadataPrefix') as $metadataPrefix => $uris) {
+            $directory = $this->getDirectoryByMeta($metadataPrefix);
 
             $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
             $xml_files = new \RegexIterator($all_files, '/\.xml$/');
@@ -106,7 +120,7 @@ class Data
                     continue;
                 }
 
-                // Build set name
+                // Translate path to setSpec URI identifier
                 $setName = str_replace($directory, '', $fileInfo->getPath());
                 $setName = trim($setName, '/');
                 $setName = str_replace('/', ':', $setName);
@@ -116,20 +130,25 @@ class Data
                     continue;
                 }
 
-                $this->records[$prefix][$fileName] = $filePath;
-                $this->deleted[$prefix][$fileName] = !filesize($filePath);
-                $this->timestamps[$prefix][$fileName] = filemtime($filePath);
-                // TODO: Bug with element on doublon
+                // If a record exist on multiple folder, because multisets, keep last not empty file in case or deletion
+                if (isset($this->records[$metadataPrefix][$fileName]) && !filesize($filePath)) {
+                    continue;
+                }
+
+                $this->records[$metadataPrefix][$fileName] = $filePath;
+                $this->deleted[$metadataPrefix][$fileName] = !filesize($filePath);
+                $this->timestamps[$metadataPrefix][$fileName] = filemtime($filePath);
+
                 if (filemtime($filePath) < $this->earliest) {
                     $this->earliest = filemtime($filePath);
                 }
             }
 
-            if (isset($this->records[$prefix])) {
-                ksort($this->records[$prefix]);
-                reset($this->records[$prefix]);
-                asort($this->timestamps[$prefix]);
-                reset($this->timestamps[$prefix]);
+            if (isset($this->records[$metadataPrefix])) {
+                ksort($this->records[$metadataPrefix]);
+                reset($this->records[$metadataPrefix]);
+                asort($this->timestamps[$metadataPrefix]);
+                reset($this->timestamps[$metadataPrefix]);
             }
         }
     }
@@ -178,12 +197,13 @@ class Data
     {
         $config = Config::getInstance();
 
-        $setName = $config->getConfigValue('setDefinition');
+        $setDefinition = $config->getConfigValue('setDefinition');
 
+        // Translate setSpec URL identifier to path
         $set = str_replace(':', '/', $set);
 
         foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
-            $file = rtrim($config->getConfigValue('dataDirectory'), '/') . '/' . $prefix . "/$set/$setName";
+            $file = $this->getDirectoryByMeta($prefix) . "/$set/$setDefinition";
             if (is_file($file)) {
                 return $file;
             }

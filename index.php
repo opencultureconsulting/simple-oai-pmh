@@ -29,12 +29,12 @@ use OCC\OAI2\Server;
 use OCC\OAI2\Helper;
 
 // Register PSR-4 autoloader
-require __DIR__ . '/vendor/autoload.php';
+require ABSPATH . 'vendor/autoload.php';
 
-// Init config manger
+// Init config manager
 $config = Config::getInstance();
 
-// Init data manger
+// Init data manager
 $data = Data::getInstance();
 
 // Get all available records and their respective status and timestamps

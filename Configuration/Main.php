@@ -64,13 +64,15 @@ $config = [
     //  'metadataPrefix' you specified above. Although the given example points to
     //  a directory inside the document root it is highly recommended to place the
     //  data directory somewhere else. This will make upgrading so much easier!
+    //
+    // Prefer absolute path !
     'dataDirectory' => './Data/',
 
     // Maximum number of records to return before giving a resumption token
-    'maxRecords' => 3,
+    'maxRecords' => 100,
 
     // Maximum number of sets to return before giving a resumption token
-    'maxSets' => 3,
+    'maxSets' => 100,
 
     // Set description filename
     'setDefinition' => '_set_definition.xml',

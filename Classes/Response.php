@@ -97,40 +97,12 @@ class Response
     {
         if (!isset($this->verbNode) && !empty($this->verb)) {
             $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb, $value);
-            if ( true === $flag ) {
+            if (true === $flag) {
                 return $this->verbNode;
             }
         }
 
         return $this->addChild($this->verbNode, $nodeName, $value);
-    }
-
-    /**
-     * Headers are enclosed inside of <record> to the query of ListRecords, ListIdentifiers and etc.
-     *
-     * @param string $identifier The identifier string for node <identifier>.
-     * @param string $timestamp Timestamp in UTC format for node <datastamp>.
-     * @param boolean $deleted Deleted status for the record.
-     * @param \DOMElement $add_to_node Default value is null.
-     * In normal cases, $add_to_node is the <record> node created previously.
-     * When it is null, the newly created header node is attatched to $this->verbNode.
-     * Otherwise it will be attached to the desired node defined in $add_to_node.
-     * @return \DOMElement
-     */
-    public function createHeader($identifier, $timestamp, $deleted = false, $add_to_node = null): \DOMElement
-    {
-        if (is_null($add_to_node)) {
-            $header_node = $this->addToVerbNode('header');
-        } else {
-            $header_node = $this->addChild($add_to_node, 'header');
-        }
-        $this->addChild($header_node, 'identifier', $identifier);
-        $this->addChild($header_node, 'datestamp', $timestamp);
-        if ($deleted) {
-            $header_node->setAttribute('status', 'deleted');
-        }
-
-        return $header_node;
     }
 
     /**
