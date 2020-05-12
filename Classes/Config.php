@@ -31,7 +31,7 @@ class Config
     /**
      * @return Config
      */
-    public static function getInstance()
+    public static function getInstance(): Config
     {
         if (self::$instance === null) {
             self::$instance = new static();
@@ -43,7 +43,17 @@ class Config
     private function __construct()
     {
         // Load configuration
-        require ABSPATH . '/Configuration/Main.php';
+        if (is_file(ABSPATH . '/../Configuration/Main.php')) {
+            $config = include ABSPATH . '/../Configuration/Main.php';
+        } elseif (is_file(ABSPATH . '/Configuration/Main.php')) {
+            $config = include ABSPATH . '/Configuration/Main.php';
+        } else {
+            throw new \RuntimeException('Missing configuration file');
+        }
+
+        if (1 === $config) {
+            throw new \RuntimeException('Configuration file must contain a return array');
+        }
 
         $this->config = $config;
 

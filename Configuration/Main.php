@@ -25,7 +25,7 @@
  * @see http://www.openarchives.org/OAI/2.0/openarchivesprotocol.htm for further explanation
  */
 
-$config = [
+return $config = [
     // Show PHP errors ?
     'debug' => true,
 
