@@ -1,5 +1,5 @@
 {
-    "name": "opencultureconsulting/oai_pmh",
+    "name": "beapi/oai_pmh",
     "description": "This is a stand-alone and easy to install data provider implementing the Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH).",
     "type": "project",
     "keywords": [
@@ -7,17 +7,24 @@
         "oai-pmh",
         "data-provider",
         "code4lib",
-        "repository"
+        "repository",
+        "sets"
     ],
-    "homepage": "https://github.com/opencultureconsulting/oai_pmh",
+    "homepage": "https://github.com/BeAPI/oai_pmh",
     "readme": "README.md",
     "license": ["GPL-3.0-or-later"],
     "authors": [
         {
+            "name": "Amaury BALMER",
+            "email": "amaury@beapi.fr",
+            "homepage": "https://beapi.fr",
+            "role": "maintainer"
+        },
+        {
             "name": "Sebastian Meyer",
             "email": "sebastian.meyer@opencultureconsulting.com",
             "homepage": "https://www.opencultureconsulting.com",
-            "role": "maintainer"
+            "role": "developer"
         },
         {
             "name": "Heinrich Stamerjohanns",
@@ -41,9 +48,9 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/opencultureconsulting/oai_pmh/issues",
-        "source": "https://github.com/opencultureconsulting/oai_pmh",
-        "docs": "https://github.com/opencultureconsulting/oai_pmh/blob/master/README.md"
+        "issues": "https://github.com/BeAPI/oai_pmh/issues",
+        "source": "https://github.com/BeAPI/oai_pmh",
+        "docs": "https://github.com/BeAPI/oai_pmh/blob/master/README.md"
     },
     "require": {
         "php": "^7.0",

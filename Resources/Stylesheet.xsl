@@ -3,6 +3,7 @@
 * Simple OAI-PMH 2.0 Data Provider
 * Copyright (C) 2006 Christopher Gutteridge <cjg@ecs.soton.ac.uk>
 * Copyright (C) 2017 Sebastian Meyer <sebastian.meyer@opencultureconsulting.com>
+* Copyright (C) 2020 Amaury BALMER <amaury@beapi.fr>
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -175,8 +176,8 @@
                         href="https://www.southampton.ac.uk/">University of Southampton
                 </a> for the <a href="https://www.eprints.org/">EPrints</a> project and was later adapted by Sebastian
                     Meyer at <a href="https://www.opencultureconsulting.com/">Open Culture Consulting</a> to be more
-                    generally applicable to other OAI-PMH interfaces. It is available on <a
-                            href="https://github.com/opencultureconsulting/oai_pmh">GitHub
+                    generally applicable to other OAI-PMH interfaces. It was updated in 2020 by Amaury BALMER at <a href="https://beapi.fr">Be API</a> to provide support for the sets. It is available on <a
+                            href="https://github.com/BeAPI/oai_pmh">GitHub
                     </a> for free!
                 </p>
             </body>

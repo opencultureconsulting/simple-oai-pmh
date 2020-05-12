@@ -1,7 +1,11 @@
 <?php
 /**
  * Simple OAI-PMH 2.0 Data Provider
+ * Copyright (C) 2005 Heinrich Stamerjohanns <stamer@uni-oldenburg.de>
+ * Copyright (C) 2011 Jianfeng Li <jianfeng.li@adelaide.edu.au>
+ * Copyright (C) 2013 Daniel Neis Araujo <danielneis@gmail.com>
  * Copyright (C) 2017 Sebastian Meyer <sebastian.meyer@opencultureconsulting.com>
+ * Copyright (C) 2020 Amaury BALMER <amaury@beapi.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

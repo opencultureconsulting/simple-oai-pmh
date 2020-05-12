@@ -1,16 +1,19 @@
 # Simple OAI-PMH 2.0 Data Provider
 
-This is a stand-alone and easy to install data provider implementing the [Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH)](https://openarchives.org/pmh/). It serves records in any metadata format from directories of XML files using the directory name as `metadataPrefix`, the filename as `identifier` and the filemtime as datestamp. 0-byte files are considered deleted records and handled accordingly. Resumption tokens are managed using files. Sets are now supported.
+This is a stand-alone and easy to install data provider implementing the [Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH)](https://openarchives.org/pmh/). 
+It serves records and sets in any metadata format from directories of XML files using the directory name as `metadataPrefix`, the filename as `identifier` and the filemtime as datestamp. 0-byte files are considered deleted records and handled accordingly. 
+Resumption tokens are managed using files. 
+Sets are now supported.
 
-Just put the records as XML files in the data directory, adjust a few configuration settings and you are ready to go!
+Just put the records as XML files in the data directory, create directory to store them by set, adjust a few configuration settings and you are ready to go!
 
-A demo installation can be found [here](https://demo.opencultureconsulting.com/oai_pmh/?verb=Identify).
+A demo installation (original project) can be found [here](https://demo.opencultureconsulting.com/oai_pmh/?verb=Identify).
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7a12022611d047ad9ef9a0c3aadb986a)](https://www.codacy.com/gh/opencultureconsulting/oai_pmh)
+[![CodeFactor](https://www.codefactor.io/repository/github/beapi/oai_pmh/badge)](https://www.codefactor.io/repository/github/beapi/oai_pmh)
 
 ## Installation
 
-1. Run `composer create-project opencultureconsulting/oai_pmh <path>`.
+1. Run `composer create-project beapi/oai_pmh <path>`.
 
 2. Edit `Configuration/Main.php` and adjust the settings according to your preferences.
 
@@ -24,7 +27,7 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 1. Backup `Configuration/Main.php` and your data directory!
 
-2. Delete everything and re-install by running `composer create-project opencultureconsulting/oai_pmh <path>`.
+2. Delete everything and re-install by running `composer create-project beapi/oai_pmh <path>`.
 
 3. Move your configuration back into `Configuration/Main.php` and restore your data directory.
 
@@ -42,10 +45,6 @@ It was then modified in 2011 by [Jianfeng Li](mailto:jianfeng.li@adelaide.edu.au
 
 In 2013 [Daniel Neis Araujo](mailto:danielneis@gmail.com) at [Federal University of Santa Catarina](https://en.ufsc.br/) modified the project again in order to integrate it with [Moodle](https://moodle.org/). His implementation can be found on [GitHub](https://github.com/danielneis/oai_pmh). In 2014 [Kazimierz Pietruszewski](mailto:antenna@antenna.io) provided some [further bugfixes](https://github.com/antennaio/oai_pmh).
 
-The current implementation was derived from the latter in 2017 by [Sebastian Meyer](mailto:sebastian.meyer@opencultureconsutling.com) at [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](https://www.dla-marbach.de/en/). It is a stand-alone version focused on easy deployment and file based record handling.
+In 2017 by [Sebastian Meyer](mailto:sebastian.meyer@opencultureconsutling.com) at [Open Culture Consulting](https://www.opencultureconsulting.com/) for the [German Literature Archive](https://www.dla-marbach.de/en/). It is a stand-alone version focused on easy deployment and file based record handling. His implementation can be found on [GitHub](https://github.com/opencultureconsulting/oai_pmh).
 
-## History
-
-In progress :
-    Allow _POST and _GET HTTP request
-    Add support of Sets
+The current implementation was derived from the latter in 2020 by [Amaury BALMER](mailto:amaury@beapi.fr) at [Be API](https://beapi.fr/) for the [BPI](https://www.bpi.fr/). It retains the philosophy brought by Sebastian in 2019 but it provides support for Sets.
