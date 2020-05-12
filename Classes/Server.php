@@ -370,7 +370,6 @@ class Server
             $data->load($file);
         }
 
-
         $this->response->importFragment($meta_node, $data);
     }
 
