@@ -75,6 +75,9 @@ class Data
 
         foreach ($config->getConfigValue('metadataPrefix') as $metadataPrefix => $uris) {
             $directory = $this->getDirectoryByMeta($metadataPrefix);
+            if (empty($directory)) {
+                continue;
+            }
 
             $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
             $xml_files = new \RegexIterator(
@@ -109,6 +112,9 @@ class Data
 
         foreach ($config->getConfigValue('metadataPrefix') as $metadataPrefix => $uris) {
             $directory = $this->getDirectoryByMeta($metadataPrefix);
+            if (empty($directory)) {
+                continue;
+            }
 
             $all_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
             $xml_files = new \RegexIterator($all_files, '/\.xml$/');
@@ -204,7 +210,12 @@ class Data
         $set = str_replace(':', '/', $set);
 
         foreach ($config->getConfigValue('metadataPrefix') as $prefix => $uris) {
-            $file = $this->getDirectoryByMeta($prefix) . "/$set/$setDefinition";
+            $directory = $this->getDirectoryByMeta($prefix);
+            if (empty($directory)) {
+                continue;
+            }
+
+            $file = $directory . "/$set/$setDefinition";
             if (is_file($file)) {
                 return $file;
             }
