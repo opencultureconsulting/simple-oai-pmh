@@ -19,7 +19,7 @@ A demo installation (original project) can be found [here](https://demo.opencult
 
 3. Create a subdirectory inside the specified data directory for every format (i. e. `metadataPrefix`) you want to provide.
 
-4. Put the records into the respective directories according to their format. Each record has to be a separate XML file with its `identifier` as filename (e. g. the file *12345678.xml* can be adressed using the `identifier` *12345678*). Optionally you can maintain deletions by keeping 0-byte files for deleted records.
+4. Put the records into the respective directories according to their format. Optionnaly create directory to store them by set. Each record has to be a separate XML file with its `identifier` as filename (e. g. the file *12345678.xml* can be adressed using the `identifier` *12345678*). Optionally you can maintain deletions by keeping 0-byte files for deleted records.
 
 5. Congratulations! Now you are running your own Simple OAI-PMH 2.0 Data Provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
 
