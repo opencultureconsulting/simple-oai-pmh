@@ -80,7 +80,7 @@ if (!is_dir($dataDir) || !is_writable($dataDir)) {
 }
 // Alright, let's start!
 echo "Updating $dataDir from $sourceDir\n";
-$todo = array ();
+$todo = [];
 $error = false;
 $oldFiles = glob($dataDir.'*.xml');
 foreach ($oldFiles as $oldFile) {
@@ -90,6 +90,12 @@ $newFiles = glob($sourceDir.'*.xml');
 foreach ($newFiles as $newFile) {
     $todo[pathinfo($newFile, PATHINFO_FILENAME)] = 'update';
 }
+$files = [
+    'added' => 0,
+    'updated' => 0,
+    'deleted' => 0,
+    'total' => count($newFiles)
+];
 foreach ($todo as $identifier => $task) {
     echo "  Checking record $identifier ... ";
     if ($task === 'update') {
@@ -97,6 +103,7 @@ foreach ($todo as $identifier => $task) {
             // Add file
             if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
                 echo format('added', 'green')."\n";
+                $files['added']++;
             } else {
                 echo format('addition failed', 'red')."\n";
                 $error = true;
@@ -105,6 +112,7 @@ foreach ($todo as $identifier => $task) {
             // Replace file
             if (copy($sourceDir.$identifier.'.xml', $dataDir.$identifier.'.xml')) {
                 echo format('updated', 'green')."\n";
+                $files['updated']++;
             } else {
                 echo format('update failed', 'red')."\n";
                 $error = true;
@@ -117,6 +125,7 @@ foreach ($todo as $identifier => $task) {
             // Truncate file
             if (fclose(fopen($dataDir.$identifier.'.xml', 'w'))) {
                 echo format('deleted', 'green')."\n";
+                $files['deleted']++;
             } else {
                 echo format('deletion failed', 'red')."\n";
                 $error = true;
@@ -126,6 +135,7 @@ foreach ($todo as $identifier => $task) {
         }
     }
 }
+echo 'Summary: '.$files['added'].' added, '.$files['updated'].' updated, '.$files['deleted'].' deleted. Total records served: '.$files['total']."\n";
 if ($error) {
     echo "Update completed, but errors occurred. Please check the logs!\n";
 } else {
