@@ -40,13 +40,15 @@ $config = [
     //  "transient" -> the repository maintains information about deletions, but
     //                 does not guarantee them to be persistent (default)
     //  "persistent" -> the repository maintains information about deletions with
-    //                  no time limit
+    //                  no time limit (recommended)
+    // If you update your repository only via the ./update.php command, you can set
+    // this to "persistent".
     'deletedRecord' => 'transient',
 
     // Metadata formats, schemas and namespaces of your records
     //
     //  The default is 'oai_dc' which is also required by the OAI-PMH specification,
-    //  but technically you can deliver any XML based data format you want. Just add
+    //  but technically you can provide any XML based data format you want. Just add
     //  another entry with the 'metadataPrefix' as key and schema/namespace URIs as
     //  array values or replace the default 'oai_dc' entry (not recommended).
     'metadataPrefix' => [
@@ -61,7 +63,8 @@ $config = [
     //  Make sure the given path is readable and there is a subdirectory for every
     //  'metadataPrefix' you specified above. Although the given example points to
     //  a directory inside the document root it is highly recommended to place the
-    //  data directory somewhere else. This will make upgrading so much easier!
+    //  data directory somewhere else. This will make upgrading so much easier and
+    //  prevents users from accessing the records directly!
     'dataDirectory' => './Data/',
 
     // Maximum number of records to return before giving a resumption token
