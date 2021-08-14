@@ -12,9 +12,9 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 1. Run `composer create-project opencultureconsulting/oai_pmh <path>`.
 
-2. Edit `Configuration/Main.php` and adjust the settings according to your preferences.
+2. Create a data directory in a not publicly accessible location outside of `<path>`. Create a subdirectory inside the specified data directory for every format (i. e. `metadataPrefix`) you want to provide.
 
-3. Create a subdirectory inside the specified data directory for every format (i. e. `metadataPrefix`) you want to provide.
+3. Copy `Configuration/Main.template.php` to `Configuration/Main.php` and adjust the settings according to your preferences. Don't forget pointing `$config['dataDirectory']` to your newly created data directory.
 
 4. Put the records into the respective directories according to their format. Each record has to be a separate XML file with its `identifier` as filename (e. g. the file *12345678.xml* can be adressed using the `identifier` *12345678*). Optionally you can maintain deletions by keeping 0-byte files for deleted records.
 
@@ -22,11 +22,11 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 ## Upgrading
 
-1. Backup `Configuration/Main.php` and your data directory!
+1. Backup `Configuration/Main.php`!
 
-2. Delete everything and re-install by running `composer create-project opencultureconsulting/oai_pmh <path>`.
+2. Delete `<path>` and re-install by running `composer create-project opencultureconsulting/oai_pmh <path>`.
 
-3. Move your configuration back into `Configuration/Main.php` and restore your data directory.
+3. Move your configuration back into `Configuration/Main.php`.
 
 4. Congratulations! Now you are running the newest version of the Simple OAI-PMH 2.0 Data Provider. You can access the entry point by calling `index.php?verb=Identify` in your browser.
 
