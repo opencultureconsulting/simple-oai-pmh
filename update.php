@@ -71,7 +71,7 @@ $dataDir = Data::getInstance()->getDirectoryByMeta($metadataPrefix);
 
 // Check dataDir permissions
 if (!is_dir($dataDir) || !is_writable($dataDir)) {
-    Helper::cliError("Error: $dataDir not writable");
+	Helper::cliError("Error: $dataDir not writable");
 }
 
 // Alright, let's start!
@@ -104,6 +104,13 @@ foreach ($todo as $relativeFilePath => $task) {
     echo "  Checking record $relativeFilePath ... ";
     if ('update' === $task) {
         if (!is_file($dataDir . $relativeFilePath)) {
+        	$dirname = dirname( $dataDir . $relativeFilePath );
+        	if ( !is_dir($dirname) ) {
+		        if (!mkdir($dirname, 0777, true)) {
+			        Helper::cliError("Error: $dirname not writable");
+		        }
+	        }
+
             // Add file
             if (copy($sourceDir . $relativeFilePath, $dataDir . $relativeFilePath)) {
                 echo Helper::CliFormat('added', 'green') . PHP_EOL;
