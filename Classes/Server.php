@@ -193,6 +193,11 @@ class Server {
                     $this->errors[] = new Exception('badArgument');
                 }
             }
+            if (isset($this->args['from']) && isset($this->args['until'])) {
+                if (strlen($this->args['from']) !== strlen($this->args['until'])) {
+                    $this->errors[] = new Exception('badArgument');
+                }
+            }
             if (isset($this->args['set'])) {
                 $this->errors[] = new Exception('noSetHierarchy');
             }
