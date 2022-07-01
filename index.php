@@ -72,7 +72,7 @@ $identifyResponse = [
 
 $oai2 = new Server(
     $baseURL,
-    $_GET,
+    array_merge($_POST, $_GET),
     $identifyResponse,
     [
         'GetRecord' => function ($identifier, $metadataPrefix) {
