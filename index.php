@@ -116,16 +116,28 @@ $oai2 = new Server(
             }
         },
         'ListRecords' => function ($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100, $set = null) {
-            global $records, $deleted, $timestamps;
+            global $records, $deleted, $timestamps, $setsrecords;
             $resultSet = [];
-            foreach ($timestamps[$metadataPrefix] as $timestamp => $identifiers) {
+
+            $currTimestamps = $timestamps;
+            $activeRecords  = $records;
+            $deletedRecords = $deleted;
+
+            // override with SET records.
+            if (isset($set)) {
+                $activeRecords  = $setsrecords[$set]['records'];
+                $currTimestamps = $setsrecords[$set]['timestamps'];
+                $deletedRecords = $setsrecords[$set]['deleted'];
+            }
+
+            foreach ($currTimestamps[$metadataPrefix] as $timestamp => $identifiers) {
                 if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
                     foreach ($identifiers as $identifier) {
                         $resultSet[] = [
                             'identifier' => $identifier,
-                            'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-                            'deleted' => $deleted[$metadataPrefix][$identifier],
-                            'metadata' => $records[$metadataPrefix][$identifier]
+                            'timestamp'  => filemtime($activeRecords[$metadataPrefix][$identifier]),
+                            'deleted'    => $deletedRecords[$metadataPrefix][$identifier],
+                            'metadata'   => $activeRecords[$metadataPrefix][$identifier]
                         ];
                     }
                 }
