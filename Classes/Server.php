@@ -39,6 +39,9 @@ class Server
     private $token_prefix = '';
     private $token_valid = 86400;
 
+    const NS_URI_OAI_DC = 'http://www.openarchives.org/OAI/2.0/oai_dc/';
+    const NS_URI_DC = 'http://purl.org/dc/elements/1.1/';
+
     public function __construct($uri, $args, $identifyResponse, $callbacks, $config)
     {
         $this->uri = $uri;
@@ -92,7 +95,32 @@ class Server
             $cmf = $this->response->addToVerbNode('Identify', null, true);
 
             foreach ($this->identifyResponse as $key => $val) {
-                $this->response->addChild($cmf, $key, $val);
+                if ( $key === 'description' ) {
+                    $element       = $this->response->doc->createElement( 'description' );
+                    $metadata_node = $cmf->appendChild( $element );
+
+                    $element = $this->response->doc->createElement( 'oai_dc:dc' );
+                    $element->setAttribute( 'xmlns:oai_dc', self::NS_URI_OAI_DC );
+                    $element->setAttribute( 'xmlns', 'http://www.openarchives.org/OAI/2.0/' );
+                    $element->setAttribute( 'xmlns:dc', 'http://purl.org/dc/elements/1.1/' );
+                    $element->setAttribute( 'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance' );
+                    $element->setAttribute( 'xsi:schemaLocation',
+                                            'http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd' );
+                    $sub_description_node = $metadata_node->appendChild( $element );
+
+                    foreach ( $val as $_key => $content ) {
+                        if ( 'identifier' == $_key ) {
+                            $element = $this->response->doc->createElement( 'dc:identifier', htmlspecialchars( html_entity_decode( $content, ENT_QUOTES, 'UTF-8' ), ENT_XML1, 'UTF-8' ) );
+                        } else {
+                            $element = $this->response->doc->createElement( 'dc:description', htmlspecialchars( html_entity_decode( $content, ENT_QUOTES, 'UTF-8' ), ENT_XML1, 'UTF-8' ) );
+                            $element->setAttribute( 'xml:lang', str_replace('lang:', '', $_key) );
+                        }
+
+                        $sub_description_node->appendChild( $element );
+                    }
+                } else {
+                    $this->response->addChild($cmf, $key, $val);
+                }
             }
         }
     }

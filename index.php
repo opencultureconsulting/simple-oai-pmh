@@ -50,7 +50,8 @@ $identifyResponse = [
     'adminEmail' => $config->getConfigValue('adminEmail'),
     'earliestDatestamp' => gmdate('Y-m-d\TH:i:s\Z', $data->getEarliest()),
     'deletedRecord' => $config->getConfigValue('deletedRecord'),
-    'granularity' => 'YYYY-MM-DDThh:mm:ssZ'
+    'granularity' => 'YYYY-MM-DDThh:mm:ssZ',
+    'description' => $config->getConfigValue('metadataPrefix')['oai_dc']['description']
 ];
 
 $oai2 = new Server(

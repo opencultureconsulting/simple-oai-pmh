@@ -56,6 +56,12 @@ return $config = [
         'oai_dc' => [
             'schema' => 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
             'namespace' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+            'description' => array(
+                'identifier' => 'https://urloftheoairepo/',
+                'lang:fre' => 'French language description of the OAI warehouse.',
+                'lang:eng' => 'English language description of the OAI warehouse.'
+                // You can add any additional languages
+            )
         ],
     ],
 
