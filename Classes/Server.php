@@ -289,7 +289,7 @@ class Server {
         if ($datetime === false) {
             $datetime = \DateTime::createFromFormat('Y-m-d', $date);
         }
-        return ($datetime !== false) && !array_sum($datetime->getLastErrors());
+        return ($datetime !== false) && ($datetime->getLastErrors() !== false);
     }
 
 }
