@@ -46,7 +46,7 @@
         "docs": "https://github.com/opencultureconsulting/oai_pmh/blob/master/README.md"
     },
     "require": {
-        "php": "^7.0",
+        "php": "^7.0|^8.0",
         "ext-xml": "*"
     },
     "autoload": {
