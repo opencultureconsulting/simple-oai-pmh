@@ -164,7 +164,7 @@
         <xsl:apply-templates select="/oai:OAI-PMH"/>
         <xsl:call-template name="quicklinks"/>
         <p class="info">You are viewing an HTML version of the XML OAI-PMH response. To see the underlying XML as it appears to any OAI-PMH harvester use your web browser's <em>view source</em> option or disable XSLT processing.</p>
-        <p class="info">This XSL script was originally written by Christopher Gutteridge at <a href="https://www.southampton.ac.uk/">University of Southampton</a> for the <a href="https://www.eprints.org/">EPrints</a> project and was later adapted by Sebastian Meyer at <a href="https://www.opencultureconsulting.com/">Open Culture Consulting</a> to be more generally applicable to other OAI-PMH interfaces. It is available on <a href="https://github.com/opencultureconsulting/oai_pmh">GitHub</a> for free!</p>
+        <p class="info">This XSL script was originally written by Christopher Gutteridge at <a href="https://www.southampton.ac.uk/">University of Southampton</a> for the <a href="https://www.eprints.org/">EPrints</a> project and was later adapted by Sebastian Meyer at <a href="https://www.opencultureconsulting.com/">Open Culture Consulting</a> to be more generally applicable to other OAI-PMH interfaces. It is available on <a href="https://github.com/opencultureconsulting/simple-oai-pmh">GitHub</a> for free!</p>
       </body>
     </html>
   </xsl:template>
