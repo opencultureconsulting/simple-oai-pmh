@@ -1,5 +1,5 @@
 {
-    "name": "opencultureconsulting/oai_pmh",
+    "name": "opencultureconsulting/simple-oai-pmh",
     "description": "This is a stand-alone and easy to install data provider implementing the Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH).",
     "type": "project",
     "keywords": [
@@ -48,6 +48,9 @@
     "require": {
         "php": "^7.0|^8.0",
         "ext-xml": "*"
+    },
+    "replace": {
+        "opencultureconsulting/oai_pmh": "self.version"
     },
     "autoload": {
         "psr-4": {

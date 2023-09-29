@@ -10,7 +10,7 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 ## Installation
 
-1. Run `composer create-project opencultureconsulting/oai_pmh <path>`.
+1. Run `composer create-project opencultureconsulting/simple-oai-pmh <path>`.
 
 2. Create a data directory in a location not publicly accessible (i. e. outside of `<path>`). Create a subdirectory inside the specified data directory for every format (i. e. `metadataPrefix`) you want to provide.
 
@@ -24,7 +24,7 @@ A demo installation can be found [here](https://demo.opencultureconsulting.com/o
 
 1. Backup `Configuration/Main.php`!
 
-2. Delete `<path>` and re-install by running `composer create-project opencultureconsulting/oai_pmh <path>`.
+2. Delete `<path>` and re-install by running `composer create-project opencultureconsulting/simple-oai-pmh <path>`.
 
 3. Move your configuration back into `Configuration/Main.php`.
 
