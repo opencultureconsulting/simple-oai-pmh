@@ -24,7 +24,11 @@ namespace OCC\OAI2;
 
 class Response {
 
-    public $doc; // DOMDocument. Handle of current XML Document object
+    public \DOMDocument $doc; // DOMDocument. Handle of current XML Document object
+
+    private string $verb = '';
+
+    private \DOMElement $verbNode;
 
     public function __construct($uri, $verb, $request_args) {
         if (substr($uri, -1, 1) == '/') {
