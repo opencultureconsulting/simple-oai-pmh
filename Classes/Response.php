@@ -78,7 +78,7 @@ class Response {
      * @param string $nodeName The name of appending node.
      * @param string $value    The content of appending node.
      */
-    public function addToVerbNode($nodeName, $value = null) {
+    public function addToVerbNode($nodeName, $value = '') {
         if (!isset($this->verbNode) && !empty($this->verb)) {
             $this->verbNode = $this->addChild($this->doc->documentElement, $this->verb);
         }
