@@ -283,10 +283,14 @@ class Server {
     }
 
     private function formatTimestamp($datestamp) {
-        if (is_array($time = date_parse_from_format('Y-m-d\TH:i:s\Z', $datestamp)) || is_array($time = date_parse_from_format('Y-m-d\TH:i:s\Z', $datestamp))) {
-            return gmmktime($time['hour'], $time['minute'], $time['second'], $time['month'] + 1, $time['day'], $time['year']);
-        } else {
+        $time = date_parse_from_format('Y-m-d\TH:i:s\Z', $datestamp);
+        if ($time['error_count'] > 0) {
+            $time = date_parse_from_format('Y-m-d', $datestamp);
+        }
+        if ($time['error_count'] > 0) {
             return null;
+        } else {
+            return gmmktime($time['hour'], $time['minute'], $time['second'], $time['month'] + 1, $time['day'], $time['year']);
         }
     }
 
