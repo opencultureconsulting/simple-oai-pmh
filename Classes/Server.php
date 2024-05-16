@@ -34,6 +34,12 @@ class Server {
     private $max_records = 100;
     private $token_prefix = '/tmp/oai2-';
     private $token_valid = 86400;
+    private $uri = '';
+    private $identifyResponse;
+    private $listMetadataFormatsCallback;
+    private $listRecordsCallback;
+    private $getRecordCallback;
+    private Response $response;
 
     public function __construct($uri, $args, $identifyResponse, $callbacks, $config) {
         $this->uri = $uri;
@@ -222,7 +228,7 @@ class Server {
                 if ($records_count - $deliveredRecords > $maxItems) {
                     $deliveredRecords +=  $maxItems;
                     $restoken = $this->createResumptionToken($deliveredRecords, $metadataPrefix, $from, $until);
-                    $expirationDatetime = gmstrftime('%Y-%m-%dT%TZ', time()+$this->token_valid);
+                    $expirationDatetime = date('Y-m-d\TH:i:s\Z', time()+$this->token_valid);
                 } elseif (isset($this->args['resumptionToken'])) {
                     // Last delivery, return empty resumptionToken
                     $restoken = null;
@@ -277,10 +283,14 @@ class Server {
     }
 
     private function formatTimestamp($datestamp) {
-        if (is_array($time = strptime($datestamp, '%Y-%m-%dT%H:%M:%SZ')) || is_array($time = strptime($datestamp, '%Y-%m-%d'))) {
-            return gmmktime($time['tm_hour'], $time['tm_min'], $time['tm_sec'], $time['tm_mon'] + 1, $time['tm_mday'], $time['tm_year']+1900);
-        } else {
+        $time = date_parse_from_format('Y-m-d\TH:i:s\Z', $datestamp);
+        if ($time['error_count'] > 0) {
+            $time = date_parse_from_format('Y-m-d', $datestamp);
+        }
+        if ($time['error_count'] > 0) {
             return null;
+        } else {
+            return gmmktime($time['hour'], $time['minute'], $time['second'], $time['month'] + 1, $time['day'], $time['year']);
         }
     }
 
@@ -289,7 +299,7 @@ class Server {
         if ($datetime === false) {
             $datetime = \DateTime::createFromFormat('Y-m-d', $date);
         }
-        return ($datetime !== false) && ($datetime->getLastErrors() !== false);
+        return ($datetime !== false);
     }
 
 }
