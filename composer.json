@@ -46,7 +46,7 @@
         "docs": "https://github.com/opencultureconsulting/simple-oai-pmh/blob/master/README.md"
     },
     "require": {
-        "php": "^7.0|^8.0",
+        "php": "7.4.*|8.0.*|8.1.*|8.2.*",
         "ext-xml": "*"
     },
     "replace": {
