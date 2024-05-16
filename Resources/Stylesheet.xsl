@@ -148,6 +148,7 @@
     </xsl:choose>
   </xsl:variable>
   <xsl:variable name='identifier' select="/oai:OAI-PMH/oai:request/@identifier"/>
+  <xsl:variable name='set' select="/oai:OAI-PMH/oai:request/@set"/>
   <xsl:variable name='from' select="/oai:OAI-PMH/oai:request/@from"/>
   <xsl:variable name='until' select="/oai:OAI-PMH/oai:request/@until"/>
   <xsl:variable name='resumptionToken' select="/oai:OAI-PMH/oai:request/@resumptionToken"/>
@@ -178,6 +179,7 @@
           <li>&#187; <a class="link" href="?verb=ListMetadataFormats&amp;identifier={$identifier}">ListMetadataFormats (<em><xsl:value-of select="$identifier"/></em>)</a></li>
         </xsl:if>
         <xsl:if test="$metadataPrefix != ''">
+          <li>&#187; <a class="link" href="?verb=ListSets&amp;metadataPrefix={$metadataPrefix}">ListSets (<em><xsl:value-of select="$metadataPrefix"/></em>)</a></li>
           <li>&#187; <a class="link" href="?verb=ListIdentifiers&amp;metadataPrefix={$metadataPrefix}">ListIdentifiers (<em><xsl:value-of select="$metadataPrefix"/></em>)</a></li>
           <li>&#187; <a class="link" href="?verb=ListRecords&amp;metadataPrefix={$metadataPrefix}">ListRecords (<em><xsl:value-of select="$metadataPrefix"/></em>)</a></li>
           <xsl:if test="$identifier">
@@ -201,6 +203,8 @@
       <td class="value">
         <xsl:if test="oai:request/@verb">verb = <em><xsl:value-of select="$verb"/></em><br/></xsl:if>
         <xsl:if test="oai:request/@metadataPrefix">metadataPrefix = <em><xsl:value-of select="$metadataPrefix"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@listSets">listSets = <em><xsl:value-of select="$listSets"/></em><br/></xsl:if>
+        <xsl:if test="oai:request/@set">listSets = <em><xsl:value-of select="$set"/></em><br/></xsl:if>
         <xsl:if test="oai:request/@identifier">identifier = <em><xsl:value-of select="$identifier"/></em><br/></xsl:if>
         <xsl:if test="oai:request/@from">from = <em><xsl:value-of select="$from"/></em><br/></xsl:if>
         <xsl:if test="oai:request/@until">until = <em><xsl:value-of select="$until"/></em><br/></xsl:if>
@@ -221,6 +225,7 @@
         <div class="results">
           <xsl:apply-templates select="oai:Identify" />
           <xsl:apply-templates select="oai:ListMetadataFormats"/>
+          <xsl:apply-templates select="oai:ListSets"/>
           <xsl:apply-templates select="oai:ListIdentifiers"/>
           <xsl:apply-templates select="oai:ListRecords"/>
           <xsl:apply-templates select="oai:GetRecord"/>
@@ -293,6 +298,7 @@ Metadata Format Details
     <ul>
       <li>&#187; <a class="link" href="?verb=ListIdentifiers&amp;metadataPrefix={oai:metadataPrefix}">ListIdentifiers</a></li>
       <li>&#187; <a class="link" href="?verb=ListRecords&amp;metadataPrefix={oai:metadataPrefix}">ListRecords</a></li>
+      <li>&#187; <a class="link" href="?verb=ListSets&amp;metadataPrefix={oai:metadataPrefix}">ListSets</a></li>
       <xsl:if test="$identifier"><li>&#187; <a class="link" href="?verb=GetRecord&amp;metadataPrefix={oai:metadataPrefix}&amp;identifier={$identifier}">GetRecord</a></li></xsl:if>
     </ul>
     <table class="values">
@@ -302,6 +308,42 @@ Metadata Format Details
       <td class="value"><xsl:value-of select="oai:metadataNamespace"/></td></tr>
       <tr><td class="key">Schema</td>
       <td class="value"><a href="{oai:schema}"><xsl:value-of select="oai:schema"/></a></td></tr>
+    </table>
+  </li>
+</xsl:template>
+
+<!--
+ListSets
+-->
+<xsl:template match="oai:listSet">
+  <xsl:choose>
+    <xsl:when test="$metadataPrefix">
+      <p class="info">This is a list of data sets available for the record <em><xsl:value-of select="$metadataPrefix"/></em>.</p>
+    </xsl:when>
+    <xsl:otherwise>
+      <p class="info">This is a list of data sets available from this repository.</p>
+    </xsl:otherwise>
+  </xsl:choose>
+  <ol>
+    <xsl:apply-templates select="oai:listListSets"/>
+  </ol>
+</xsl:template>
+
+<!--
+Sets Format Details
+-->
+<xsl:template match="oai:set">
+  <li>
+    <h3>List Set <em><xsl:value-of select="oai:setName"/></em></h3>
+    <ul>
+      <xsl:if test="$metadataPrefix"><li>&#187; <a class="link" href="?verb=ListIdentifiers&amp;set={oai:setSpec}&amp;metadataPrefix={$metadataPrefix}">ListIdentifiers</a> </li></xsl:if>
+      <xsl:if test="$metadataPrefix"><li>&#187; <a class="link" href="?verb=ListRecords&amp;set={oai:setSpec}&amp;metadataPrefix={$metadataPrefix}">ListRecords</a></li></xsl:if>
+    </ul>
+    <table class="values">
+      <tr><td class="key">setSpec</td>
+      <td class="value"><xsl:value-of select="oai:setSpec"/></td></tr>
+      <tr><td class="key">setName</td>
+      <td class="value"><xsl:value-of select="oai:setName"/></td></tr>
     </table>
   </li>
 </xsl:template>

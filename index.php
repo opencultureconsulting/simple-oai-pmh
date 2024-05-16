@@ -30,10 +30,11 @@ require __DIR__.'/vendor/autoload.php';
 require __DIR__.'/Configuration/Main.php';
 
 // Get all available records and their respective status and timestamps
-$records = [];
-$deleted = [];
-$timestamps = [];
-$earliest = time();
+$records     = [];
+$setsrecords = [];
+$deleted     = [];
+$timestamps  = [];
+$earliest    = time();
 
 foreach ($config['metadataPrefix'] as $prefix => $uris) {
     $files = glob(rtrim($config['dataDirectory'], '/').'/'.$prefix.'/*.xml');
@@ -45,10 +46,36 @@ foreach ($config['metadataPrefix'] as $prefix => $uris) {
             $earliest = filemtime($file);
         }
     }
-    ksort($records[$prefix]);
-    reset($records[$prefix]);
-    ksort($timestamps[$prefix]);
-    reset($timestamps[$prefix]);
+    if (isset($records[$prefix])) {
+        ksort($records[$prefix]);
+        reset($records[$prefix]);
+        ksort($timestamps[$prefix]);
+        reset($timestamps[$prefix]);
+    }
+}
+
+// get all set records.
+foreach ($config['ListSets'] as $set => $setd) {
+    foreach ($config['metadataPrefix'] as $prefix => $uris) {
+        $path = rtrim($config['dataDirectory'], '/').'/sets/'.$set.'/'.$prefix.'/*.xml';
+        $files = glob(rtrim($config['dataDirectory'], '/').'/sets/'.$set.'/'.$prefix.'/*.xml');
+
+        foreach ($files as $file) {
+            $setsrecords[$set]['records'][$prefix][pathinfo($file, PATHINFO_FILENAME)] = $file;
+            $setsrecords[$set]['deleted'][$prefix][pathinfo($file, PATHINFO_FILENAME)] = !filesize($file);
+            $setsrecords[$set]['timestamps'][$prefix][filemtime($file)][] = pathinfo($file, PATHINFO_FILENAME);
+            if (filemtime($file) < $earliest) {
+                $earliest = filemtime($file);
+            }
+        }
+
+        if (isset($setsrecords[$set]['records'][$prefix])) {
+            ksort($setsrecords[$set]['records'][$prefix]);
+            reset($setsrecords[$set]['records'][$prefix]);
+            ksort($setsrecords[$set]['timestamps'][$prefix]);
+            reset($setsrecords[$set]['timestamps'][$prefix]);
+        }
+    }
 }
 
 // Get current base URL
@@ -88,17 +115,29 @@ $oai2 = new Server(
                 ];
             }
         },
-        'ListRecords' => function ($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100) {
-            global $records, $deleted, $timestamps;
+        'ListRecords' => function ($metadataPrefix, $from = null, $until = null, $count = false, $deliveredRecords = 0, $maxItems = 100, $set = null) {
+            global $records, $deleted, $timestamps, $setsrecords;
             $resultSet = [];
-            foreach ($timestamps[$metadataPrefix] as $timestamp => $identifiers) {
+
+            $currTimestamps = $timestamps;
+            $activeRecords  = $records;
+            $deletedRecords = $deleted;
+
+            // override with SET records.
+            if (isset($set)) {
+                $activeRecords  = $setsrecords[$set]['records'];
+                $currTimestamps = $setsrecords[$set]['timestamps'];
+                $deletedRecords = $setsrecords[$set]['deleted'];
+            }
+
+            foreach ($currTimestamps[$metadataPrefix] as $timestamp => $identifiers) {
                 if ((is_null($from) || $timestamp >= $from) && (is_null($until) || $timestamp <= $until)) {
                     foreach ($identifiers as $identifier) {
                         $resultSet[] = [
                             'identifier' => $identifier,
-                            'timestamp' => filemtime($records[$metadataPrefix][$identifier]),
-                            'deleted' => $deleted[$metadataPrefix][$identifier],
-                            'metadata' => $records[$metadataPrefix][$identifier]
+                            'timestamp'  => filemtime($activeRecords[$metadataPrefix][$identifier]),
+                            'deleted'    => $deletedRecords[$metadataPrefix][$identifier],
+                            'metadata'   => $activeRecords[$metadataPrefix][$identifier]
                         ];
                     }
                 }
@@ -125,6 +164,26 @@ $oai2 = new Server(
                 }
             } else {
                 return $config['metadataPrefix'];
+            }
+        },
+        'ListSets' => function ($identifier = '') {
+            global $config, $records, $setsrecords;
+            if (!empty($identifier)) {
+                $listsets = [];
+                foreach ($setsrecords as $set => $records) {
+                    foreach ($records as $format => $record) {
+                        if (!empty($record[$identifier])) {
+                            $listsets[$set] = $config['ListSets'][$set];
+                        }
+                    }
+                }
+                if (!empty($listsets)) {
+                    return $listsets;
+                } else {
+                    throw new Exception('idDoesNotExist');
+                }
+            } else {
+                return $config['ListSets'];
             }
         }
     ],

@@ -56,6 +56,24 @@ $config = [
             'schema' => 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
             'namespace' => 'http://www.openarchives.org/OAI/2.0/oai_dc/',
         ],
+        'mods' => [
+            'schema' => 'http://www.loc.gov/standards/mods/v3/mods-3-3.xsd',
+            'namespace' => 'http://www.loc.gov/mods/v3',
+        ],
+    ],
+
+    // Record Sets.
+    //
+    //
+    'ListSets' => [
+        10001 => [
+            'spec' => 10001,
+            'name' => 'Record Set One',
+        ],
+        10002 => [
+            'spec' => 10002,
+            'name' => 'Record Set Two',
+        ],
     ],
 
     // Directory containing the records
