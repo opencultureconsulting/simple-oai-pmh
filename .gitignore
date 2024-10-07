@@ -1,0 +1,9 @@
+/.phpdoc/cache/
+/.vscode/
+/vendor/
+.php-cs-fixer.php
+phpcs.xml
+phpdoc.xml
+phpstan.neon
+psalm.xml
+TODO

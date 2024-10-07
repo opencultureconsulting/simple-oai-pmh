@@ -1,5 +1,5 @@
 {
-    "name": "opencultureconsulting/oai_pmh",
+    "name": "opencultureconsulting/simple-oai-pmh",
     "description": "This is a stand-alone and easy to install data provider implementing the Open Archives Initiative's Protocol for Metadata Harvesting (OAI-PMH).",
     "type": "project",
     "keywords": [
@@ -9,7 +9,7 @@
         "code4lib",
         "repository"
     ],
-    "homepage": "https://github.com/opencultureconsulting/oai_pmh",
+    "homepage": "https://github.com/opencultureconsulting/simple-oai-pmh",
     "readme": "README.md",
     "license": ["GPL-3.0-or-later"],
     "authors": [
@@ -41,13 +41,16 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/opencultureconsulting/oai_pmh/issues",
-        "source": "https://github.com/opencultureconsulting/oai_pmh",
-        "docs": "https://github.com/opencultureconsulting/oai_pmh/blob/master/README.md"
+        "issues": "https://github.com/opencultureconsulting/simple-oai-pmh/issues",
+        "source": "https://github.com/opencultureconsulting/simple-oai-pmh",
+        "docs": "https://github.com/opencultureconsulting/simple-oai-pmh/blob/master/README.md"
     },
     "require": {
-        "php": "^7.0",
+        "php": "7.4.*|8.0.*|8.1.*|8.2.*",
         "ext-xml": "*"
+    },
+    "replace": {
+        "opencultureconsulting/oai_pmh": "self.version"
     },
     "autoload": {
         "psr-4": {
