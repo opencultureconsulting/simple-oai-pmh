@@ -4,7 +4,7 @@ This is a stand-alone and easy to install data provider implementing the [Open A
 
 Just put the records as XML files in the data directory, adjust a few configuration settings and you are ready to go!
 
-A demo installation can be found [here](https://demo.opencultureconsulting.com/oai_pmh/?verb=Identify).
+A demo installation can be found [here](https://demo.opencultureconsulting.com/simple-oai-pmh/?verb=Identify).
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7a12022611d047ad9ef9a0c3aadb986a)](https://www.codacy.com/gh/opencultureconsulting/simple-oai-pmh)
 
