@@ -53,6 +53,7 @@ class Server {
         $this->args = $args;
         $this->identifyResponse = $identifyResponse;
         $this->listMetadataFormatsCallback = $callbacks['ListMetadataFormats'];
+        $this->listSetsCallback = $callbacks['ListSets'];
         $this->listRecordsCallback = $callbacks['ListRecords'];
         $this->getRecordCallback = $callbacks['GetRecord'];
         $this->max_records = $config['maxRecords'];
@@ -121,6 +122,20 @@ class Server {
             } else {
                 $this->errors[] = new Exception('badResumptionToken');
             }
+        } elseif (empty($this->errors)) {
+            try {
+                if ($sets = call_user_func($this->listSetsCallback, $identifier)) {
+                    foreach ($sets as $key => $val) {
+                        $cmf = $this->response->addToVerbNode('set');
+                        $this->response->addChild($cmf, 'setSpec', $key);
+                        $this->response->addChild($cmf, 'setName', $val['name']);
+                    }
+                } else {
+                    $this->errors[] = new Exception('noSetHierarchy#1');
+                }
+            } catch (Exception $e) {
+                $this->errors[] = $e;
+            }
         } else {
             $this->errors[] = new Exception('noSetHierarchy');
         }
@@ -162,6 +177,8 @@ class Server {
         $metadataPrefix = isset($this->args['metadataPrefix']) ? $this->args['metadataPrefix'] : '';
         $from = isset($this->args['from']) ? $this->args['from'] : '';
         $until = isset($this->args['until']) ? $this->args['until'] : '';
+        $set = isset($this->args['set']) ? $this->args['set'] : null;
+
         if (isset($this->args['resumptionToken'])) {
             if (count($this->args) > 1) {
                 $this->errors[] = new Exception('badArgument');
@@ -205,15 +222,18 @@ class Server {
                 }
             }
             if (isset($this->args['set'])) {
-                $this->errors[] = new Exception('noSetHierarchy');
+                $ListSets = call_user_func($this->listSetsCallback);
+                if (!isset($ListSets[$this->args['set']])) {
+                    $this->errors[] = new Exception('noSetHierarchy');
+                }
             }
         }
         if (empty($this->errors)) {
             try {
-                if (!($records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true))) {
+                if (!($records_count = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), true, 0, 100, $set))) {
                     throw new Exception('noRecordsMatch');
                 }
-                $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems);
+                $records = call_user_func($this->listRecordsCallback, $metadataPrefix, $this->formatTimestamp($from), $this->formatTimestamp($until), false, $deliveredRecords, $maxItems, $set);
                 foreach ($records as $record) {
                     $cur_record = null;
                     if ($this->verb == 'ListRecords') { // for ListIdentifiers, only headers will be returned.
