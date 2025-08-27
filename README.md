@@ -1,6 +1,6 @@
 > [!CAUTION]
 > This repository was archived and is no longer maintained.
-> :point_right: Please consider using [**opencultureconsulting/oai-pmh2**](https://github.com/opencultureconsulting.com/oai-pmh2/) instead!
+> Please consider using [**opencultureconsulting/oai-pmh2**](https://github.com/opencultureconsulting.com/oai-pmh2/) instead!
 
 # Simple OAI-PMH 2.0 Data Provider
 
