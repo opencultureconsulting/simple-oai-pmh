@@ -118,4 +118,5 @@ doc/*           linguist-generated=true
 # Exclude files from exporting
 .github/*       export-ignore
 .phpdoc/*       export-ignore
+.editorconfig   export-ignore
 phpdoc.dist.xml export-ignore
